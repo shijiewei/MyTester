@@ -1,0 +1,7 @@
+<resources>
+	<string name="app_name">MyTester</string>
+	<string name="tv_title">My Tester</string>
+	<string name="btn_test_handler">Test Handler</string>
+	<string name="btn_test_memory_leak">Test Memory Leak</string>
+	<string name="title_memory_leak">Memory Leak</string>
+</resources>
