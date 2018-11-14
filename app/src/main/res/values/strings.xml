@@ -1,4 +1,5 @@
 <resources>
+	<!-- MainActivity -->
 	<string name="app_name">我的测试</string>
 	<string name="tv_title">我的测试</string>
 	<string name="btn_test_handler">测试Handler</string>
@@ -6,11 +7,15 @@
 	<string name="title_memory_leak">内存泄漏</string>
 	<string name="title_router">路由功能</string>
 	<string name="title_wlan">扫描局域网</string>
+	<string name="title_customized_view">自定义View</string>
 
 	<!-- RouterActivity -->
 	<string name="router_label_ip">IP 地址</string>
 	<string name="router_label_mac">MAC 地址</string>
 	<string name="router_label_wlan">WLAN0 信息</string>
 	<string name="router_label_router">Router</string>
+
 	<!-- WlanActivity -->
+
+	<!-- CustomizedViewActivity -->
 </resources>

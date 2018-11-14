@@ -13,6 +13,7 @@ import android.view.View;
 import com.example.weishj.mytester.collect.BaseClt;
 import com.example.weishj.mytester.collect.MyLog;
 import com.example.weishj.mytester.handler.Sub;
+import com.example.weishj.mytester.ui.CustomizedViewActivity;
 import com.example.weishj.mytester.ui.MemoryLeakActivity;
 import com.example.weishj.mytester.ui.RouterActivity;
 import com.example.weishj.mytester.ui.WlanActivity;
@@ -38,6 +39,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
 		findViewById(R.id.btn_memory_leak).setOnClickListener(this);
 		findViewById(R.id.btn_router).setOnClickListener(this);
 		findViewById(R.id.btn_wlan).setOnClickListener(this);
+		findViewById(R.id.btn_customizedView).setOnClickListener(this);
 
 		// CMCCAESTest
 		String key = "8F39703DD5D64A6D";
@@ -60,8 +62,12 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
 			Intent i = new Intent(this, RouterActivity.class);
 			startActivity(i);
 		} else if (id == R.id.btn_wlan) {
-			MyLog.d(TAG, "btn_router clicked");
+			MyLog.d(TAG, "btn_wlan clicked");
 			Intent i = new Intent(this, WlanActivity.class);
+			startActivity(i);
+		} else if (id == R.id.btn_customizedView) {
+			MyLog.d(TAG, "btn_customizedView clicked");
+			Intent i = new Intent(this, CustomizedViewActivity.class);
 			startActivity(i);
 		}
 	}
