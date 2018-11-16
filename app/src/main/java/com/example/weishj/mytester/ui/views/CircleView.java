@@ -10,6 +10,11 @@ import android.view.View;
 
 import com.example.weishj.mytester.R;
 
+/**
+ * 这个类演示了如何实现一个继承自View的自定义view
+ *
+ * 注：如果是继承自系统定义的特定View（如TextView），则不需要自己处理“wrap_content”和“padding”的问题
+ */
 public class CircleView extends View {
 	private static final int DEFAULT_WIDTH = 200;
 	private static final int DEFAULT_HEIGHT = 200;
