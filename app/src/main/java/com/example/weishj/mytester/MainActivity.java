@@ -2,24 +2,34 @@ package com.example.weishj.mytester;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.os.SystemClock;
 import android.util.Log;
 import android.view.View;
+import android.widget.Toast;
 
 import com.example.weishj.mytester.collect.BaseClt;
 import com.example.weishj.mytester.collect.MyLog;
+import com.example.weishj.mytester.fileobserver.FileWatcher;
 import com.example.weishj.mytester.handler.Sub;
 import com.example.weishj.mytester.ui.CustomizedViewActivity;
+import com.example.weishj.mytester.ui.FileMonitorActivity;
 import com.example.weishj.mytester.ui.MemoryLeakActivity;
 import com.example.weishj.mytester.ui.RouterActivity;
 import com.example.weishj.mytester.ui.WlanActivity;
 import com.example.weishj.mytester.util.CmccAESTest;
 import com.mob.tools.utils.Hashon;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 public class MainActivity extends BaseActivity implements View.OnClickListener {
@@ -33,6 +43,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
 
 		this.mContext = getApplicationContext();
 
+		checkPermissions();
 		testHandler();
 
 		findViewById(R.id.btn_handler).setOnClickListener(this);
@@ -40,6 +51,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
 		findViewById(R.id.btn_router).setOnClickListener(this);
 		findViewById(R.id.btn_wlan).setOnClickListener(this);
 		findViewById(R.id.btn_customizedView).setOnClickListener(this);
+		findViewById(R.id.btn_file_monitor_test).setOnClickListener(this);
 
 		// CMCCAESTest
 		String key = "8F39703DD5D64A6D";
@@ -69,11 +81,39 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
 			MyLog.d(TAG, "btn_customizedView clicked");
 			Intent i = new Intent(this, CustomizedViewActivity.class);
 			startActivity(i);
+		} else if (id == R.id.btn_file_monitor_test) {
+			MyLog.d(TAG, "btn_file_monitor_test clicked");
+			Intent i = new Intent(this, FileMonitorActivity.class);
+			startActivity(i);
 		}
 	}
 
 	private void testHandler() {
 		Sub sub = new Sub();
 		sub.startThread();
+	}
+
+	/* 检查使用权限 */
+	protected void checkPermissions() {
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+			try {
+				PackageManager pm = getPackageManager();
+				PackageInfo pi = pm.getPackageInfo(getPackageName(), PackageManager.GET_PERMISSIONS);
+				ArrayList<String> list = new ArrayList<String>();
+				for (String p : pi.requestedPermissions) {
+					if (checkSelfPermission(p) != PackageManager.PERMISSION_GRANTED) {
+						list.add(p);
+					}
+				}
+				if (list.size() > 0) {
+					String[] permissions = list.toArray(new String[list.size()]);
+					if (permissions != null) {
+						requestPermissions(permissions, 1);
+					}
+				}
+			} catch (Throwable t) {
+				t.printStackTrace();
+			}
+		}
 	}
 }

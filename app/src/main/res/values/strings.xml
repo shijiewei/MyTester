@@ -8,6 +8,7 @@
 	<string name="title_router">路由功能</string>
 	<string name="title_wlan">扫描局域网</string>
 	<string name="title_customized_view">自定义View</string>
+	<string name="title_file_monitor_test">文件监控测试</string>
 
 	<!-- RouterActivity -->
 	<string name="router_label_ip">IP 地址</string>
@@ -18,4 +19,8 @@
 	<!-- WlanActivity -->
 
 	<!-- CustomizedViewActivity -->
+
+	<!-- FileMonitorActivity -->
+	<string name="file_monitor_create_file">创建/删除文件</string>
+	<string name="file_monitor_modify_file">修改文件</string>
 </resources>

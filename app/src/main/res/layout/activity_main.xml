@@ -47,4 +47,11 @@
 		android:layout_marginBottom="@dimen/btn_marginBottom"
 		android:text="@string/title_customized_view"
 		android:textSize="@dimen/btn_text_size"/>
+	<Button
+		android:id="@+id/btn_file_monitor_test"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:layout_marginBottom="@dimen/btn_marginBottom"
+		android:text="@string/title_file_monitor_test"
+		android:textSize="@dimen/btn_text_size"/>
 </LinearLayout>

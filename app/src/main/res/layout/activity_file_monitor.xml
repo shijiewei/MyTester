@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent"
+	android:padding="20dp"
+	android:gravity="center_horizontal"
+	android:orientation="vertical">
+	<TextView
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:text="@string/title_file_monitor_test"
+		android:layout_marginBottom="20dp"
+		android:textSize="18dp"/>
+	<Button
+		android:id="@+id/btn_file_monitor_create"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:layout_marginBottom="@dimen/btn_marginBottom"
+		android:text="@string/file_monitor_create_file"
+		android:textSize="@dimen/btn_text_size"/>
+	<Button
+		android:id="@+id/btn_file_monitor_modify"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:layout_marginBottom="@dimen/btn_marginBottom"
+		android:text="@string/file_monitor_modify_file"
+		android:textSize="@dimen/btn_text_size"/>
+</LinearLayout>

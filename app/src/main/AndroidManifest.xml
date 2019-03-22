@@ -25,14 +25,11 @@
 				<category android:name="android.intent.category.LAUNCHER"/>
 			</intent-filter>
 		</activity>
-		<activity android:name=".ui.MemoryLeakActivity">
-		</activity>
-		<activity android:name=".ui.RouterActivity">
-		</activity>
-		<activity android:name=".ui.WlanActivity">
-		</activity>
-		<activity android:name=".ui.CustomizedViewActivity">
-		</activity>
+		<activity android:name=".ui.MemoryLeakActivity"/>
+		<activity android:name=".ui.RouterActivity"/>
+		<activity android:name=".ui.WlanActivity"/>
+		<activity android:name=".ui.CustomizedViewActivity"/>
+		<activity android:name=".ui.FileMonitorActivity"/>
 	</application>
 
 </manifest>
