@@ -32,8 +32,7 @@ public class FileMonitorActivity extends BaseActivity implements View.OnClickLis
 		prepareFileMonitorTest();
 		initView();
 		index = 0;
-		monitorExternalDir();
-		createFileUnderFileDir();
+//		createFileUnderFileDir();
 	}
 
 	@Override
@@ -49,12 +48,15 @@ public class FileMonitorActivity extends BaseActivity implements View.OnClickLis
 			createFile();
 		} else if (id == R.id.btn_file_monitor_modify) {
 			modifyFile();
+		} else if (id == R.id.btn_file_monitor_scan) {
+			monitorExternalDir();
 		}
 	}
 
 	private void initView() {
 		findViewById(R.id.btn_file_monitor_create).setOnClickListener(this);
 		findViewById(R.id.btn_file_monitor_modify).setOnClickListener(this);
+		findViewById(R.id.btn_file_monitor_scan).setOnClickListener(this);
 	}
 
 	private void prepareFileMonitorTest() {
@@ -121,6 +123,9 @@ public class FileMonitorActivity extends BaseActivity implements View.OnClickLis
 		}
 	}
 
+	/**
+	 * MODE_WORLD_READABLE | MODE_WORLD_WRITEABLE 从7.0开始已经被废弃，如果在7.0以上系统调用将直接crash
+	 */
 	private void createFileUnderFileDir() {
 		try {
 			FileOutputStream os = openFileOutput("test.txt",MODE_WORLD_READABLE | MODE_WORLD_WRITEABLE);
@@ -132,12 +137,14 @@ public class FileMonitorActivity extends BaseActivity implements View.OnClickLis
 	}
 
 	private void monitorExternalDir() {
-		String externalPath = "/storage/emulated/0/Android/data/";
+		// "/storage/emulated/0/Android/data/"
+		String externalPath = Environment.getExternalStorageDirectory() + "/Android/data/";
 		File exPath = new File(externalPath);
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss sss");
 		if (exPath != null && exPath.isDirectory()) {
 			File[] files = exPath.listFiles();
 			Log.d(FileWatcher.TAG, "size: " + files.length);
+			Toast.makeText(this, "target: " + externalPath + "\nsize: " + files.length, Toast.LENGTH_SHORT).show();
 			for (File file : files) {
 				Log.d(FileWatcher.TAG, file.getAbsolutePath() + ", lastUpdate: " + sdf.format(file.lastModified()));
 			}

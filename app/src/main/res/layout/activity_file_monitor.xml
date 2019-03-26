@@ -26,4 +26,11 @@
 		android:layout_marginBottom="@dimen/btn_marginBottom"
 		android:text="@string/file_monitor_modify_file"
 		android:textSize="@dimen/btn_text_size"/>
+	<Button
+		android:id="@+id/btn_file_monitor_scan"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:layout_marginBottom="@dimen/btn_marginBottom"
+		android:text="@string/file_monitor_scan_file"
+		android:textSize="@dimen/btn_text_size"/>
 </LinearLayout>

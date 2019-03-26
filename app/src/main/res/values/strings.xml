@@ -23,4 +23,5 @@
 	<!-- FileMonitorActivity -->
 	<string name="file_monitor_create_file">创建/删除文件</string>
 	<string name="file_monitor_modify_file">修改文件</string>
+	<string name="file_monitor_scan_file">扫描Android/data</string>
 </resources>
