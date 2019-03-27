@@ -34,6 +34,7 @@ public class FileWatcher extends FileObserver {
 
 	public FileWatcher(String path, int mask) {
 		super(path, mask);
+		Log.i(TAG, "Start watching: " + path);
 		mPath = path;
 		mMask = mask;
 	}

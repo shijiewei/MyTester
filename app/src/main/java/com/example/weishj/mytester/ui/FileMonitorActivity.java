@@ -1,5 +1,6 @@
 package com.example.weishj.mytester.ui;
 
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
@@ -14,7 +15,14 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.nio.file.Files;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 public class FileMonitorActivity extends BaseActivity implements View.OnClickListener {
 	private static final String TAG = FileMonitorActivity.class.getSimpleName();
@@ -49,7 +57,8 @@ public class FileMonitorActivity extends BaseActivity implements View.OnClickLis
 		} else if (id == R.id.btn_file_monitor_modify) {
 			modifyFile();
 		} else if (id == R.id.btn_file_monitor_scan) {
-			monitorExternalDir();
+//			monitorExternalDir();
+			monitorExternalDir2();
 		}
 	}
 
@@ -70,6 +79,7 @@ public class FileMonitorActivity extends BaseActivity implements View.OnClickLis
 //		path = Environment.getExternalStorageDirectory() + "/test/";
 		// Y	/storage/emulated/0/Android/data/com.example.weishj.mytester/files/DCIM/test/test.txt
 		path = getExternalFilesDir(Environment.DIRECTORY_DCIM) + "/test/";
+		fullPath = path + FILE_NAME;
 		fileWatcher = new FileWatcher(path);
 		fileWatcher.startWatching();
 
@@ -82,7 +92,6 @@ public class FileMonitorActivity extends BaseActivity implements View.OnClickLis
 
 	private void createFile() {
 		index = 0;
-		fullPath = path + FILE_NAME;
 		File newFile = new File(fullPath);
 		if (!newFile.exists()) {
 			try {
@@ -115,8 +124,22 @@ public class FileMonitorActivity extends BaseActivity implements View.OnClickLis
 			osw.write(index + "\r\n");
 			//写入完成关闭流
 			osw.close();
+
 			long update = file.lastModified();
-			Log.d(FileWatcher.TAG, "update: " + update);
+			String parentPath = "/storage/emulated/0/Android/data/com.example.weishj.mytester/";
+			File file1 = new File(parentPath);
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+				BasicFileAttributes attributes = Files.readAttributes(file1.toPath(), BasicFileAttributes.class);
+				Log.d(FileWatcher.TAG, "Files.getLastModifiedTime: " + Files.getLastModifiedTime(file1.toPath()) + ", file: " + parentPath);
+				Log.d(FileWatcher.TAG, "attributes.createTime: " + attributes.creationTime().toString() + ", file: " + parentPath);
+				Log.d(FileWatcher.TAG, "attributes.modifyTime: " + attributes.lastModifiedTime().toString() + ", file: " + parentPath);
+				Log.d(FileWatcher.TAG, "attributes.accessTime: " + attributes.lastAccessTime().toString() + ", file: " + parentPath);
+				Log.d(FileWatcher.TAG, "attributes.size: " + attributes.size() + ", file: " + parentPath);
+			}
+			if (file1 != null && file1.exists()) {
+				Log.d(FileWatcher.TAG, "update: " + file1.lastModified() + ", file: " + parentPath);
+			}
+			Log.d(FileWatcher.TAG, "update: " + update + ", file: " + fullPath);
 			Toast.makeText(this, "Appended: " + index, Toast.LENGTH_SHORT).show();
 		}catch (Exception e) {
 			e.printStackTrace();
@@ -151,5 +174,84 @@ public class FileMonitorActivity extends BaseActivity implements View.OnClickLis
 		} else {
 			Log.d(FileWatcher.TAG, "Can not read path: " + externalPath);
 		}
+	}
+
+	private void monitorExternalDir2() {
+		// "/storage/emulated/0/Android/data/"
+		String externalPath = Environment.getExternalStorageDirectory() + "/Android/data/";
+		File exPath = new File(externalPath);
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss sss");
+		if (exPath != null && exPath.isDirectory()) {
+			File[] files = exPath.listFiles();
+			Toast.makeText(this, "target: " + externalPath + "\nsize: " + files.length, Toast.LENGTH_SHORT).show();
+			long start = System.currentTimeMillis();
+			for (File file : files) {
+				Log.d(FileWatcher.TAG, file.getName() + ", lastUpdate: " + sdf.format(getUpdateTime(file.getAbsolutePath())));
+			}
+			long end = System.currentTimeMillis();
+			long duration = (end - start);
+			Log.d(FileWatcher.TAG, "size: " + files.length + ", duration: " + duration + " ms");
+		} else {
+			Log.d(FileWatcher.TAG, "Can not read path: " + externalPath);
+		}
+	}
+
+	/**
+	 * 获取指定文件夹的最近更新时间
+	 *
+	 * 由于文件夹下的子目录内容更新时，父目录本身的更新时间不会变，因此需要递归遍历文件夹下所有子目录和子文件，取最近的更新时间作为该文件夹的更新时间，
+	 * 递归调用容易发生StackOverflowError，因此使用非递归算法实现
+	 *
+	 * @param path 文件夹路径
+	 * @return
+	 */
+	private long getUpdateTime(String path) {
+		int fileNum = 0;
+		int folderNum = 0;
+		long update = 0L;
+		File file = new File(path);
+		if (file != null && file.exists()) {
+			update = file.lastModified();
+			LinkedList<File> list = new LinkedList<>();
+			File[] subFiles = file.listFiles();
+			if (subFiles != null) {
+				for (File subFile : subFiles) {
+					if (subFile != null) {
+						update = subFile.lastModified();
+						if (subFile.isDirectory()) {
+							list.add(subFile);
+							folderNum++;
+						} else {
+							fileNum++;
+						}
+					}
+				}
+				File temp_file;
+				while (!list.isEmpty()) {
+					temp_file = list.removeFirst();
+					subFiles = temp_file.listFiles();
+					if (subFiles != null) {
+						for (File subFile : subFiles) {
+							if (subFile != null) {
+								long newTime = subFile.lastModified();
+								if (newTime > update) {
+									update = newTime;
+								}
+								if (subFile.isDirectory()) {
+									list.add(subFile);
+									folderNum++;
+								} else {
+									fileNum++;
+								}
+							}
+						}
+					}
+				}
+			}
+		} else {
+			Log.d(FileWatcher.TAG, "Directory not exists. path: " + path);
+		}
+		Log.d(FileWatcher.TAG, "folder: " + folderNum + ", file: " + fileNum + ", path: " + path);
+		return update;
 	}
 }
