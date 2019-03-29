@@ -18,11 +18,9 @@ import java.io.OutputStreamWriter;
 import java.nio.file.Files;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class FileMonitorActivity extends BaseActivity implements View.OnClickListener {
 	private static final String TAG = FileMonitorActivity.class.getSimpleName();
@@ -185,15 +183,30 @@ public class FileMonitorActivity extends BaseActivity implements View.OnClickLis
 			File[] files = exPath.listFiles();
 			Toast.makeText(this, "target: " + externalPath + "\nsize: " + files.length, Toast.LENGTH_SHORT).show();
 			long start = System.currentTimeMillis();
+			int size = 0;
 			for (File file : files) {
-				Log.d(FileWatcher.TAG, file.getName() + ", lastUpdate: " + sdf.format(getUpdateTime(file.getAbsolutePath())));
+				if (isPkg(file)) {
+					size ++;
+					Log.d(FileWatcher.TAG, file.getName() + ", lastUpdate: " + sdf.format(getUpdateTime(file.getAbsolutePath())));
+				}
 			}
 			long end = System.currentTimeMillis();
 			long duration = (end - start);
-			Log.d(FileWatcher.TAG, "size: " + files.length + ", duration: " + duration + " ms");
+			Log.d(FileWatcher.TAG, "total: " + files.length + ", pkg: " + size + ", duration: " + duration + " ms");
 		} else {
 			Log.d(FileWatcher.TAG, "Can not read path: " + externalPath);
 		}
+	}
+
+	private boolean isPkg(File file) {
+		boolean isPkg = false;
+		if (file != null && file.isDirectory()) {
+			// Java/Android合法包名，可以包含大写字母、小写字母、数字和下划线，用点(英文句号)分隔称为段，且至少包含2个段，隔开的每一段都必须以字母开头
+			Pattern pattern = Pattern.compile("^([a-zA-Z_][a-zA-Z0-9_]*)+([.][a-zA-Z_][a-zA-Z0-9_]*)+$");
+			Matcher matcher = pattern.matcher(file.getName());
+			isPkg = matcher.matches();
+		}
+		return isPkg;
 	}
 
 	/**
@@ -251,7 +264,7 @@ public class FileMonitorActivity extends BaseActivity implements View.OnClickLis
 		} else {
 			Log.d(FileWatcher.TAG, "Directory not exists. path: " + path);
 		}
-		Log.d(FileWatcher.TAG, "folder: " + folderNum + ", file: " + fileNum + ", path: " + path);
+//		Log.d(FileWatcher.TAG, "folder: " + folderNum + ", file: " + fileNum + ", path: " + path);
 		return update;
 	}
 }
