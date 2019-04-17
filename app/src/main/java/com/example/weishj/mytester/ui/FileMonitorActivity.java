@@ -1,5 +1,8 @@
 package com.example.weishj.mytester.ui;
 
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
@@ -10,6 +13,7 @@ import android.widget.Toast;
 import com.example.weishj.mytester.BaseActivity;
 import com.example.weishj.mytester.R;
 import com.example.weishj.mytester.fileobserver.FileWatcher;
+import com.mob.tools.MobLog;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -267,4 +271,23 @@ public class FileMonitorActivity extends BaseActivity implements View.OnClickLis
 //		Log.d(FileWatcher.TAG, "folder: " + folderNum + ", file: " + fileNum + ", path: " + path);
 		return update;
 	}
+
+	private boolean isSystemApp(String pkgName) {
+		boolean isSystemApp = false;
+		PackageInfo pi = null;
+		try {
+			PackageManager pm = getApplicationContext().getPackageManager();
+			pi = pm.getPackageInfo(pkgName, 0);
+		} catch (Throwable t) {
+			Log.w(TAG, t.getMessage(), t);
+		}
+		// 是系统中已安装的应用
+		if (pi != null) {
+			boolean isSysApp = (pi.applicationInfo.flags & ApplicationInfo.FLAG_SYSTEM) == 1;
+			boolean isSysUpd = (pi.applicationInfo.flags & ApplicationInfo.FLAG_UPDATED_SYSTEM_APP) == 1;
+			isSystemApp = isSysApp || isSysUpd;
+		}
+		return isSystemApp;
+	}
+
 }

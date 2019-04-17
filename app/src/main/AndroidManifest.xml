@@ -30,6 +30,7 @@
 		<activity android:name=".ui.WlanActivity"/>
 		<activity android:name=".ui.CustomizedViewActivity"/>
 		<activity android:name=".ui.FileMonitorActivity"/>
+		<activity android:name=".ui.BackServiceActivity"/>
 	</application>
 
 </manifest>

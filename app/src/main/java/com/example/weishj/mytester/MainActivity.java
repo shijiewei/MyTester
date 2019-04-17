@@ -19,6 +19,7 @@ import com.example.weishj.mytester.collect.BaseClt;
 import com.example.weishj.mytester.collect.MyLog;
 import com.example.weishj.mytester.fileobserver.FileWatcher;
 import com.example.weishj.mytester.handler.Sub;
+import com.example.weishj.mytester.ui.BackServiceActivity;
 import com.example.weishj.mytester.ui.CustomizedViewActivity;
 import com.example.weishj.mytester.ui.FileMonitorActivity;
 import com.example.weishj.mytester.ui.MemoryLeakActivity;
@@ -52,6 +53,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
 		findViewById(R.id.btn_wlan).setOnClickListener(this);
 		findViewById(R.id.btn_customizedView).setOnClickListener(this);
 		findViewById(R.id.btn_file_monitor_test).setOnClickListener(this);
+		findViewById(R.id.btn_backservice).setOnClickListener(this);
 
 		// CMCCAESTest
 		String key = "8F39703DD5D64A6D";
@@ -84,6 +86,10 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
 		} else if (id == R.id.btn_file_monitor_test) {
 			MyLog.d(TAG, "btn_file_monitor_test clicked");
 			Intent i = new Intent(this, FileMonitorActivity.class);
+			startActivity(i);
+		} else if (id == R.id.btn_backservice) {
+			MyLog.d(TAG, "btn_backservice clicked");
+			Intent i = new Intent(this, BackServiceActivity.class);
 			startActivity(i);
 		}
 	}
