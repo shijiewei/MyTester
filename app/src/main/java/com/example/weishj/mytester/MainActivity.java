@@ -22,6 +22,7 @@ import com.example.weishj.mytester.handler.Sub;
 import com.example.weishj.mytester.ui.BackServiceActivity;
 import com.example.weishj.mytester.ui.CustomizedViewActivity;
 import com.example.weishj.mytester.ui.FileMonitorActivity;
+import com.example.weishj.mytester.ui.FileShareActivity;
 import com.example.weishj.mytester.ui.MemoryLeakActivity;
 import com.example.weishj.mytester.ui.RouterActivity;
 import com.example.weishj.mytester.ui.WlanActivity;
@@ -45,7 +46,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
 		this.mContext = getApplicationContext();
 
 		checkPermissions();
-		testHandler();
+//		testHandler();
 
 		findViewById(R.id.btn_handler).setOnClickListener(this);
 		findViewById(R.id.btn_memory_leak).setOnClickListener(this);
@@ -54,6 +55,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
 		findViewById(R.id.btn_customizedView).setOnClickListener(this);
 		findViewById(R.id.btn_file_monitor_test).setOnClickListener(this);
 		findViewById(R.id.btn_backservice).setOnClickListener(this);
+		findViewById(R.id.btn_file_share).setOnClickListener(this);
 
 		// CMCCAESTest
 		String key = "8F39703DD5D64A6D";
@@ -90,6 +92,10 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
 		} else if (id == R.id.btn_backservice) {
 			MyLog.d(TAG, "btn_backservice clicked");
 			Intent i = new Intent(this, BackServiceActivity.class);
+			startActivity(i);
+		} else if (id == R.id.btn_file_share) {
+			MyLog.d(TAG, "btn_file_share clicked");
+			Intent i = new Intent(this, FileShareActivity.class);
 			startActivity(i);
 		}
 	}

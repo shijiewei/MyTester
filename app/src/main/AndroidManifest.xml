@@ -31,6 +31,7 @@
 		<activity android:name=".ui.CustomizedViewActivity"/>
 		<activity android:name=".ui.FileMonitorActivity"/>
 		<activity android:name=".ui.BackServiceActivity"/>
+		<activity android:name=".ui.FileShareActivity"/>
 	</application>
 
 </manifest>

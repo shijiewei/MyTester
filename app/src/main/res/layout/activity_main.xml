@@ -95,6 +95,14 @@
 					android:layout_marginBottom="@dimen/btn_marginBottom"
 					android:text="@string/title_back_service"
 					android:textSize="@dimen/btn_text_size"/>
+				<Button
+					android:id="@+id/btn_file_share"
+					android:layout_width="0dp"
+					android:layout_height="wrap_content"
+					android:layout_weight="1"
+					android:layout_marginBottom="@dimen/btn_marginBottom"
+					android:text="@string/title_file_share"
+					android:textSize="@dimen/btn_text_size"/>
 			</LinearLayout>
 		</LinearLayout>
 	</ScrollView>
