@@ -14,22 +14,8 @@
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
 		android:layout_marginBottom="20dp"
-		android:text="@string/title_wlan"
+		android:text="@string/title_file_share"
 		android:textSize="18dp"/>
-	<Button
-		android:id="@+id/page_test_create_file_btn"
-		android:layout_width="wrap_content"
-		android:layout_height="wrap_content"
-		android:layout_marginTop="20dp"
-		android:textSize="14sp"
-		android:text="创建文件"/>
-	<Button
-		android:id="@+id/page_test_read_file_btn"
-		android:layout_width="wrap_content"
-		android:layout_height="wrap_content"
-		android:layout_marginTop="20dp"
-		android:textSize="14sp"
-		android:text="读取文件"/>
 	<ScrollView
 		android:layout_width="match_parent"
 		android:layout_height="match_parent"
@@ -43,19 +29,119 @@
 				android:layout_height="wrap_content"
 				android:layout_marginBottom="10dp"
 				android:orientation="horizontal">
-				<!--<TextView-->
-					<!--android:layout_width="wrap_content"-->
-					<!--android:layout_height="wrap_content"-->
-					<!--android:layout_marginRight="10dp"-->
-					<!--android:text="@string/router_label_ip"-->
-					<!--android:textSize="14dp"/>-->
-				<!--<TextView-->
-					<!--android:id="@+id/router_ip_tv"-->
-					<!--android:layout_width="match_parent"-->
-					<!--android:layout_height="wrap_content"-->
-					<!--android:gravity="right"-->
-					<!--android:textSize="14dp"-->
-					<!--tools:text="192.168.1.1"/>-->
+				<Button
+					android:id="@+id/page_test_create_file_by_file_sdcard_btn"
+					android:layout_width="0dp"
+					android:layout_height="wrap_content"
+					android:layout_weight="1"
+					android:layout_marginRight="10dp"
+					android:textSize="14sp"
+					android:text="File API 创建文件(sdcard)"/>
+				<Button
+					android:id="@+id/page_test_read_file_by_file_sdcard_btn"
+					android:layout_width="0dp"
+					android:layout_height="wrap_content"
+					android:layout_weight="1"
+					android:textSize="14sp"
+					android:text="File API 读取文件(sdcard)"/>
+			</LinearLayout>
+			<LinearLayout
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:layout_marginBottom="10dp"
+				android:orientation="horizontal">
+				<Button
+					android:id="@+id/page_test_create_file_by_file_private_btn"
+					android:layout_width="0dp"
+					android:layout_height="wrap_content"
+					android:layout_weight="1"
+					android:layout_marginRight="10dp"
+					android:textSize="14sp"
+					android:text="File API 创建文件(私有目录)"/>
+				<Button
+					android:id="@+id/page_test_read_file_by_file_private_btn"
+					android:layout_width="0dp"
+					android:layout_height="wrap_content"
+					android:layout_weight="1"
+					android:textSize="14sp"
+					android:text="File API 读取文件(私有目录)"/>
+			</LinearLayout>
+			<LinearLayout
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:layout_marginBottom="10dp"
+				android:orientation="horizontal">
+				<Button
+					android:id="@+id/page_test_create_file_by_media_btn"
+					android:layout_width="0dp"
+					android:layout_height="wrap_content"
+					android:layout_weight="1"
+					android:layout_marginRight="10dp"
+					android:textSize="14sp"
+					android:text="MediaStore 创建文件"/>
+				<Button
+					android:id="@+id/page_test_read_file_by_media_btn"
+					android:layout_width="0dp"
+					android:layout_height="wrap_content"
+					android:layout_weight="1"
+					android:textSize="14sp"
+					android:text="MediaStore 读取文件"/>
+			</LinearLayout>
+			<LinearLayout
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:layout_marginBottom="10dp"
+				android:orientation="horizontal">
+				<Button
+					android:id="@+id/page_test_create_file_by_content_resolver_btn"
+					android:layout_width="0dp"
+					android:layout_height="wrap_content"
+					android:layout_weight="1"
+					android:layout_marginRight="10dp"
+					android:textSize="14sp"
+					android:text="ContentResolver 创建文件"/>
+				<Button
+					android:id="@+id/page_test_read_file_by_content_resolver_btn"
+					android:layout_width="0dp"
+					android:layout_height="wrap_content"
+					android:layout_weight="1"
+					android:textSize="14sp"
+					android:text="ContentResolver 读取文件"/>
+			</LinearLayout>
+			<LinearLayout
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:layout_marginBottom="10dp"
+				android:orientation="horizontal">
+				<Button
+					android:id="@+id/page_test_delete_others_file_btn"
+					android:layout_width="0dp"
+					android:layout_height="wrap_content"
+					android:layout_weight="1"
+					android:layout_marginRight="10dp"
+					android:textSize="14sp"
+					android:text="删除其他应用的媒体文件(需删除MediaStore创建的)"/>
+			</LinearLayout>
+			<LinearLayout
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:layout_marginBottom="10dp"
+				android:orientation="horizontal">
+				<Button
+					android:id="@+id/page_test_create_file_by_saf_btn"
+					android:layout_width="0dp"
+					android:layout_height="wrap_content"
+					android:layout_weight="1"
+					android:layout_marginRight="10dp"
+					android:textSize="14sp"
+					android:text="SAF 创建文件"/>
+				<Button
+					android:id="@+id/page_test_read_file_by_saf_btn"
+					android:layout_width="0dp"
+					android:layout_height="wrap_content"
+					android:layout_weight="1"
+					android:textSize="14sp"
+					android:text="SAF 读取文件"/>
 			</LinearLayout>
 		</LinearLayout>
 	</ScrollView>
