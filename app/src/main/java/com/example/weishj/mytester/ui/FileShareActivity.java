@@ -15,6 +15,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.ParcelFileDescriptor;
 import android.provider.MediaStore;
+import android.provider.OpenableColumns;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
@@ -45,7 +46,7 @@ public class FileShareActivity extends BaseActivity {
 	private static final String TEST_NAME = ".test";
 	private static final String TEST_DISPLAY_NAME = "test_img";
 	private static final String TEST_ASSET_IMG = "testImg.jpg";
-	private static final String TEST_CREATED_IMG_NAME = "to_test.jpg";
+	private static final String TEST_CREATED_IMG_NAME = "from_assets.jpg";
 	private static final String TEST_CREATED_FILE_SAF = ".txt";
 	private static final int REQUEST_DELETE_OTHERS_FILE = 1001;
 	private static final int REQUEST_CREATE_FILE_BY_SAF = 1002;
@@ -103,7 +104,8 @@ public class FileShareActivity extends BaseActivity {
 		} else if (id == R.id.page_test_create_file_by_saf_btn) {
 			createFileBySAF("text/plain", TEST_CREATED_FILE_SAF);
 		} else if (id == R.id.page_test_read_file_by_saf_btn) {
-			readFileBySAF(safCreatedFileName);
+			String file = TextUtils.isEmpty(safCreatedFileName) ? TEST_CREATED_FILE_SAF : safCreatedFileName;
+			readFileBySAF(file);
 		}
 	}
 
@@ -195,7 +197,7 @@ public class FileShareActivity extends BaseActivity {
 			InputStream inputStream = this.getResources().getAssets().open(originImg);
 			Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
 			String uri = MediaStore.Images.Media.insertImage(this.getContentResolver(), bitmap, displayName, desc);
-			fileName = getFileNameFromUri(Uri.parse(uri), null);
+			fileName = getFileNameFromUri(Uri.parse(uri));
 			log("Create img by media success. displayName: " + fileName);
 		} catch (Throwable e) {
 			log("Create img by media failed.\n" + e.getMessage());
@@ -320,7 +322,7 @@ public class FileShareActivity extends BaseActivity {
 		}
 		String fileName = "";
 		if (url != null) {
-			fileName = getFileNameFromUri(url, null);
+			fileName = getFileNameFromUri(url);
 			log("Media file inserted. displayName: " + fileName);
 		}
 		return fileName;
@@ -498,28 +500,13 @@ public class FileShareActivity extends BaseActivity {
 			fileOutputStream.flush();
 			osw.flush();
 			osw.close();
-			displayName = getFileNameFromUri(uri, null);
+			displayName = getFileNameFromUri(uri);
 			log("File created. file: " + displayName);
 		} catch (Exception e) {
 			log("Failed to write string into uri.\n" + e.getMessage());
 			e.printStackTrace();
 		}
 		return displayName;
-	}
-
-	private String getFileNameFromUri(Uri uri, String selection) {
-		String path = null;
-		Cursor cursor = getContentResolver().query(uri, null, selection, null, null);
-		if (cursor != null) {
-			Log.e(TAG, "cursor size:" + cursor.getCount());
-			if (cursor.moveToNext()) {
-				// Q 开始，已经无法通过MediaStore.Images.Media.DATA直接获取文件在sdcard的真实路径了
-				path = cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.DISPLAY_NAME));
-			}
-
-			cursor.close();
-		}
-		return path;
 	}
 
 	private void readFileBySAF(String name) {
@@ -576,5 +563,51 @@ public class FileShareActivity extends BaseActivity {
 		} else {
 			log("API level " + Build.VERSION.SDK_INT + ", no need to read by saf");
 		}
+	}
+
+	/**
+	 * 检查文档元数据
+	 *
+	 * @param uri
+	 * @return displayName
+	 */
+	private String getFileNameFromUri(Uri uri) {
+		String displayName = null;
+		// The query, since it only applies to a single document, will only return
+		// one row. There's no need to filter, sort, or select fields, since we want
+		// all fields for one document.
+		Cursor cursor = getContentResolver().query(uri, null, null, null, null);
+		try {
+			// 获取文档的名称
+			// moveToFirst() returns false if the cursor has 0 rows.  Very handy for
+			// "if there's anything to look at, look at it" conditionals.
+			if (cursor != null  && cursor.moveToFirst()) {
+				Log.e(TAG, "cursor size:" + cursor.getCount());
+				// Note it's called "Display Name".  This is
+				// provider-specific, and might not necessarily be the file name.
+				displayName = cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME));
+			}
+
+			// 获取文档的大小
+			int sizeIndex = cursor.getColumnIndex(OpenableColumns.SIZE);
+			// If the size is unknown, the value stored is null.  But since an
+			// int can't be null in Java, the behavior is implementation-specific,
+			// which is just a fancy term for "unpredictable".  So as
+			// a rule, check if it's null before assigning to an int.  This will
+			// happen often:  The storage API allows for remote files, whose
+			// size might not be locally known.
+			String size = null;
+			if (!cursor.isNull(sizeIndex)) {
+				// Technically the column stores an int, but cursor.getString()
+				// will do the conversion automatically.
+				size = cursor.getString(sizeIndex);
+			} else {
+				size = "Unknown";
+			}
+			Log.e(TAG, "File: " + displayName + ", Size: " + size);
+		} finally {
+			cursor.close();
+		}
+		return displayName;
 	}
 }
