@@ -396,7 +396,9 @@ public class FileShareActivity extends BaseActivity {
 	}
 
 	/**
-	 * 删除共享集合目录下的媒体文件
+	 * 删除共享集合目录下的媒体文件（自己创建的/其他应用创建的）
+	 *
+	 * 注意：若删除其他应用创建的媒体文件，需要READ_EXTERNAL_STORAGE权限
 	 *
 	 * @param context
 	 * @param name 查找时，文件名应该是带有后缀的全称，否则找不到文件
