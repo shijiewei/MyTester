@@ -18,14 +18,12 @@ import android.provider.MediaStore;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
 import android.widget.Toast;
 
 import com.example.weishj.mytester.BaseActivity;
 import com.example.weishj.mytester.R;
 
 import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileDescriptor;
 import java.io.FileInputStream;
@@ -51,8 +49,9 @@ public class FileShareActivity extends BaseActivity {
 	private static final String TEST_CREATED_FILE_SAF = ".txt";
 	private static final int REQUEST_DELETE_OTHERS_FILE = 1001;
 	private static final int REQUEST_CREATE_FILE_BY_SAF = 1002;
-	private String createFileUri;
+	private String contentResolverCreateFileName;
 	private String safCreatedFileName;
+	private String mediaCreatedFileName;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -89,14 +88,16 @@ public class FileShareActivity extends BaseActivity {
 		} else if (id == R.id.page_test_read_file_by_file_private_btn) {
 			readFileByFileAPI(TEST_PATH_PRIVATE_DIR, TEST_NAME);
 		} else if (id == R.id.page_test_create_file_by_media_btn) {
-			createFileByMedia(TEST_ASSET_IMG, TEST_CREATED_IMG_NAME, "test img save use media");
+			mediaCreatedFileName = createFileByMedia(TEST_ASSET_IMG, TEST_CREATED_IMG_NAME, "test img save use media");
 		} else if (id == R.id.page_test_read_file_by_media_btn) {
-			readFileByMedia(TEST_CREATED_IMG_NAME);
+			String file = TextUtils.isEmpty(mediaCreatedFileName) ? TEST_CREATED_IMG_NAME : mediaCreatedFileName;
+			readFileByMedia(file);
 		} else if (id == R.id.page_test_create_file_by_content_resolver_btn) {
-			createFileUri = createFileByContentResolver(this, "image/jpeg",
+			contentResolverCreateFileName = createFileByContentResolver(this, "image/jpeg",
 					TEST_DISPLAY_NAME, "test img save use insert");
 		} else if (id == R.id.page_test_read_file_by_content_resolver_btn) {
-			readFileByContentResolver(this, TEST_DISPLAY_NAME + ".jpg");
+			String file = TextUtils.isEmpty(contentResolverCreateFileName) ? TEST_DISPLAY_NAME + ".jpg" : contentResolverCreateFileName;
+			readFileByContentResolver(this, file);
 		} else if (id == R.id.page_test_delete_others_file_btn) {
 			deleteOthersFile(this, TEST_CREATED_IMG_NAME);
 		} else if (id == R.id.page_test_create_file_by_saf_btn) {
@@ -186,18 +187,21 @@ public class FileShareActivity extends BaseActivity {
 		Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
 	}
 
-	private void createFileByMedia(String originImg, String displayName, String desc) {
+	private String createFileByMedia(String originImg, String displayName, String desc) {
+		String fileName = "";
 		try {
 			// 字符串的InputStream无法通过decodeStream转换成Bitmap
 //			InputStream inputStream = new ByteArrayInputStream(TEST_CONTENT.getBytes());
 			InputStream inputStream = this.getResources().getAssets().open(originImg);
 			Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
 			String uri = MediaStore.Images.Media.insertImage(this.getContentResolver(), bitmap, displayName, desc);
-			log("Create img by media success. uri: " + uri);
+			fileName = getFileNameFromUri(Uri.parse(uri), null);
+			log("Create img by media success. displayName: " + fileName);
 		} catch (Throwable e) {
 			log("Create img by media failed.\n" + e.getMessage());
 			e.printStackTrace();
 		}
+		return fileName;
 	}
 
 	private void readFileByMedia(String name) {
@@ -281,7 +285,6 @@ public class FileShareActivity extends BaseActivity {
 		values.put(MediaStore.Images.Media.DESCRIPTION, description);
 		values.put(MediaStore.Images.Media.MIME_TYPE, mimeType);
 		Uri url = null;
-		String stringUrl = null;    /* value to be returned */
 		ContentResolver cr = context.getContentResolver();
 		try {
 			url = cr.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
@@ -315,11 +318,12 @@ public class FileShareActivity extends BaseActivity {
 				url = null;
 			}
 		}
+		String fileName = "";
 		if (url != null) {
-			stringUrl = url.toString();
-			log("Media file inserted.");
+			fileName = getFileNameFromUri(url, null);
+			log("Media file inserted. displayName: " + fileName);
 		}
-		return stringUrl;
+		return fileName;
 	}
 
 	/**
