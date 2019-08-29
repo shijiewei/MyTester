@@ -25,6 +25,17 @@
 			android:layout_width="match_parent"
 			android:layout_height="match_parent"
 			android:orientation="vertical">
+			<View
+				android:layout_width="match_parent"
+				android:layout_height="1dp"
+				android:background="@android:color/background_light"/>
+			<TextView
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:gravity="center_horizontal"
+				android:text="File API操作"
+				android:textStyle="bold"
+				android:textSize="14dp"/>
 			<LinearLayout
 				android:layout_width="match_parent"
 				android:layout_height="wrap_content"
@@ -67,6 +78,17 @@
 					android:textSize="14sp"
 					android:text="File API 读取文件(私有目录)"/>
 			</LinearLayout>
+			<View
+				android:layout_width="match_parent"
+				android:layout_height="1dp"
+				android:background="@android:color/background_light"/>
+			<TextView
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:gravity="center_horizontal"
+				android:text="MediaStore(ContentResolver)操作媒体目录"
+				android:textStyle="bold"
+				android:textSize="14dp"/>
 			<LinearLayout
 				android:layout_width="match_parent"
 				android:layout_height="wrap_content"
