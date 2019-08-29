@@ -11,10 +11,11 @@
 	android:gravity="center_horizontal"
 	android:orientation="vertical">
 	<TextView
+		android:id="@+id/id_file_share_title_tv"
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
 		android:layout_marginBottom="20dp"
-		android:text="@string/title_file_share"
+		tools:text="@string/title_file_share"
 		android:textSize="18dp"/>
 	<ScrollView
 		android:layout_width="match_parent"
@@ -122,6 +123,17 @@
 					android:textSize="14sp"
 					android:text="删除其他应用的媒体文件(需删除MediaStore创建的)"/>
 			</LinearLayout>
+			<View
+				android:layout_width="match_parent"
+				android:layout_height="1dp"
+				android:background="@android:color/background_light"/>
+			<TextView
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:gravity="center_horizontal"
+				android:text="SAF访问指定文件"
+				android:textStyle="bold"
+				android:textSize="14dp"/>
 			<LinearLayout
 				android:layout_width="match_parent"
 				android:layout_height="wrap_content"
@@ -142,7 +154,194 @@
 					android:layout_weight="1"
 					android:textSize="14sp"
 					android:text="SAF 读取文件"/>
+				<Button
+					android:id="@+id/page_test_edit_file_by_saf_btn"
+					android:layout_width="0dp"
+					android:layout_height="wrap_content"
+					android:layout_weight="1"
+					android:textSize="14sp"
+					android:text="SAF 编辑文件"/>
 			</LinearLayout>
+			<View
+				android:layout_width="match_parent"
+				android:layout_height="1dp"
+				android:background="@android:color/background_light"/>
+			<TextView
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:gravity="center_horizontal"
+				android:text="申请指定目录完整访问权，DocumentFile API操作"
+				android:textStyle="bold"
+				android:textSize="14dp"/>
+			<LinearLayout
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:layout_marginBottom="10dp"
+				android:orientation="horizontal">
+				<Button
+					android:id="@+id/page_test_apply_root_authorization_btn"
+					android:layout_width="0dp"
+					android:layout_height="wrap_content"
+					android:layout_weight="1"
+					android:layout_marginRight="10dp"
+					android:textSize="14sp"
+					android:text="申请根目录"/>
+				<Button
+					android:id="@+id/page_test_write_root_btn"
+					android:layout_width="0dp"
+					android:layout_height="wrap_content"
+					android:layout_weight="1"
+					android:layout_marginRight="10dp"
+					android:textSize="14sp"
+					android:text="写根目录"/>
+				<Button
+					android:id="@+id/page_test_release_root_authorization_btn"
+					android:layout_width="0dp"
+					android:layout_height="wrap_content"
+					android:layout_weight="1"
+					android:layout_marginRight="10dp"
+					android:textSize="14sp"
+					android:text="撤销根目录"/>
+			</LinearLayout>
+			<LinearLayout
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:layout_marginBottom="10dp"
+				android:orientation="horizontal">
+				<Button
+					android:id="@+id/page_test_apply_download_authorization_btn"
+					android:layout_width="0dp"
+					android:layout_height="wrap_content"
+					android:layout_weight="1"
+					android:layout_marginRight="10dp"
+					android:textSize="12sp"
+					android:text="申请Download"/>
+				<Button
+					android:id="@+id/page_test_write_download_btn"
+					android:layout_width="0dp"
+					android:layout_height="wrap_content"
+					android:layout_weight="1"
+					android:layout_marginRight="10dp"
+					android:textSize="12sp"
+					android:text="写Download"/>
+				<Button
+					android:id="@+id/page_test_release_download_authorization_btn"
+					android:layout_width="0dp"
+					android:layout_height="wrap_content"
+					android:layout_weight="1"
+					android:layout_marginRight="10dp"
+					android:textSize="12sp"
+					android:text="撤销Download"/>
+			</LinearLayout>
+			<LinearLayout
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:layout_marginBottom="10dp"
+				android:orientation="horizontal">
+				<Button
+					android:id="@+id/page_test_write_others_private_dir_btn"
+					android:layout_width="0dp"
+					android:layout_height="wrap_content"
+					android:layout_weight="1"
+					android:layout_marginRight="10dp"
+					android:textSize="14sp"
+					android:text="写其他应用私有目录"/>
+				<Button
+					android:id="@+id/page_test_write_media_dir_btn"
+					android:layout_width="0dp"
+					android:layout_height="wrap_content"
+					android:layout_weight="1"
+					android:layout_marginRight="10dp"
+					android:textSize="14sp"
+					android:text="写媒体集合目录"/>
+			</LinearLayout>
+			<LinearLayout
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:layout_marginBottom="10dp"
+				android:orientation="horizontal">
+				<Button
+					android:id="@+id/page_test_release_all_authorization_btn"
+					android:layout_width="0dp"
+					android:layout_height="wrap_content"
+					android:layout_weight="1"
+					android:layout_marginRight="10dp"
+					android:textSize="14sp"
+					android:text="撤销所有目录授权"/>
+			</LinearLayout>
+			<View
+				android:layout_width="match_parent"
+				android:layout_height="1dp"
+				android:background="@android:color/background_light"/>
+			<TextView
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:gravity="center_horizontal"
+				android:text="FileProvider共享文件"
+				android:textStyle="bold"
+				android:textSize="14dp"/>
+			<LinearLayout
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:layout_marginBottom="10dp"
+				android:orientation="horizontal">
+				<Button
+					android:id="@+id/page_test_grant_file_provider_btn"
+					android:layout_width="0dp"
+					android:layout_height="wrap_content"
+					android:layout_weight="1"
+					android:layout_marginRight="10dp"
+					android:textSize="14sp"
+					android:text="授权Uri"/>
+				<Button
+					android:id="@+id/page_test_release_file_provider_btn"
+					android:layout_width="0dp"
+					android:layout_height="wrap_content"
+					android:layout_weight="1"
+					android:layout_marginRight="10dp"
+					android:textSize="14sp"
+					android:text="撤销Uri权限"/>
+			</LinearLayout>
+			<LinearLayout
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:layout_marginBottom="10dp"
+				android:orientation="horizontal">
+				<Button
+					android:id="@+id/page_test_read_file_by_file_provider_btn"
+					android:layout_width="0dp"
+					android:layout_height="wrap_content"
+					android:layout_weight="1"
+					android:layout_marginRight="10dp"
+					android:textSize="14sp"
+					android:text="读取文件(硬编码Uri)"/>
+				<Button
+					android:id="@+id/page_test_edit_file_by_file_provider_btn"
+					android:layout_width="0dp"
+					android:layout_height="wrap_content"
+					android:layout_weight="1"
+					android:layout_marginRight="10dp"
+					android:textSize="14sp"
+					android:text="写入文件(硬编码Uri)"/>
+			</LinearLayout>
+			<LinearLayout
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:layout_marginBottom="10dp"
+				android:orientation="horizontal">
+				<Button
+					android:id="@+id/page_test_read_file_by_file_provider_with_intent_btn"
+					android:layout_width="0dp"
+					android:layout_height="wrap_content"
+					android:layout_weight="1"
+					android:layout_marginRight="10dp"
+					android:textSize="14sp"
+					android:text="读取文件(Intent传递Uri)"/>
+			</LinearLayout>
+			<View
+				android:layout_width="match_parent"
+				android:layout_height="1dp"
+				android:background="@android:color/background_light"/>
 		</LinearLayout>
 	</ScrollView>
 </LinearLayout>

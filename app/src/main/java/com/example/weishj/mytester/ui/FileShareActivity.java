@@ -1,11 +1,15 @@
 package com.example.weishj.mytester.ui;
 
 import android.app.RecoverableSecurityException;
+import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
+import android.content.UriPermission;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -16,13 +20,18 @@ import android.os.Environment;
 import android.os.ParcelFileDescriptor;
 import android.provider.MediaStore;
 import android.provider.OpenableColumns;
+import android.support.v4.content.FileProvider;
+import android.support.v4.provider.DocumentFile;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.weishj.mytester.BaseActivity;
 import com.example.weishj.mytester.R;
+import com.example.weishj.mytester.util.DateUtils;
+import com.example.weishj.mytester.util.UriUtils;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -36,34 +45,102 @@ import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * 测试Android Q 分区存储机制下的文件操作与应用间共享
+ *
+ * 说明：
+ * 1. 由于是测试应用间的文件共享，为了少写代码，采用同一个工程，编译不同包名的apk进行测试。请将该项目分别编译以下两个applicationId的apk：
+ *		（1）com.example.mytester
+ *		（2）com.example.fake
+ */
 public class FileShareActivity extends BaseActivity {
 	private static final String TAG = "FileShareActivity";
+	private static final String TEST_CREATED_DIR = "AMyDir";
+	private static final String TEST_CREATED_FILE = ".txt";
 	// /sdcard
-	private static final String TEST_PATH_SDCARD = Environment.getExternalStorageDirectory() + "/AMyTest/";
-	private static final String TEST_CONTENT = "This is content";
-	// /sdcard/Android/data/<pkgName>/files
-	private String TEST_PATH_PRIVATE_DIR;
+	private static final String TEST_PATH_SDCARD = Environment.getExternalStorageDirectory() + "/" + TEST_CREATED_DIR;
 	private static final String TEST_NAME = ".test";
 	private static final String TEST_DISPLAY_NAME = "test_img";
 	private static final String TEST_ASSET_IMG = "testImg.jpg";
 	private static final String TEST_CREATED_IMG_NAME = "from_assets.jpg";
 	private static final String TEST_CREATED_FILE_SAF = ".txt";
+	private static final String EXTERNAL_ROOT = Environment.getExternalStorageDirectory().getAbsolutePath();
+	private static final String EXTERNAL_DOWNLOAD = EXTERNAL_ROOT + "/Download";
+	private static final String EXTERNAL_PICTURES = "/Pictures";
 	private static final int REQUEST_DELETE_OTHERS_FILE = 1001;
 	private static final int REQUEST_CREATE_FILE_BY_SAF = 1002;
+	private static final int REQUEST_READ_FILE_BY_SAF = 1003;
+	private static final int REQUEST_EDIT_FILE_BY_SAF = 1004;
+	private static final int REQUEST_APPLY_DIR_AUTH = 1005;
+	private static final int REQUEST_OPEN_ACTIVITY = 1006;
+	private static String TEST_SHARABLE_URI_STRING_FAKE;
+	private static String TEST_SHARABLE_URI_STRING_MYSELF;
+	private static String TEST_CONTENT;
+	// /sdcard/Android/data/<pkgName>/files
+	private String TEST_PATH_PRIVATE_DIR;
+	private String TEST_PATH_OTHERS_PRIVATE_DIR;
 	private String contentResolverCreateFileName;
 	private String safCreatedFileName;
 	private String mediaCreatedFileName;
+	private Uri sharableUri;
+	private String myPkg;
+	private String fakePkg;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		// 传null指访问默认的files目录，传Environment.DIRECTORY_DCIM就是/files/DCIM/目录
-		TEST_PATH_PRIVATE_DIR = this.getExternalFilesDir(null) + "/AMyTest/";
 		setContentView(R.layout.activity_file_share);
+
+		myPkg = this.getApplicationContext().getPackageName();
+		// 传null指访问默认的files目录，传Environment.DIRECTORY_DCIM就是/files/DCIM/目录
+		TEST_PATH_PRIVATE_DIR = this.getExternalFilesDir(null) + "/" + TEST_CREATED_DIR;
+		TEST_CONTENT = "Hello, " + myPkg;
+
+		if ("com.example.mytester".equals(myPkg)) {
+			fakePkg = "com.example.fake";
+		} else {
+			fakePkg = "com.example.mytester";
+		}
+		// 模拟本地硬编码其他应用共享的文件uri，通过FileProvider读取文件，这里的uri规则必须与/res/xml/filepaths.xml中定义的值匹配
+		TEST_SHARABLE_URI_STRING_FAKE = "content://" + fakePkg + ".fileprovider/my_private_dir_files/" + TEST_NAME;
+		TEST_SHARABLE_URI_STRING_MYSELF = "content://" + myPkg + ".fileprovider/my_private_dir_files/" + TEST_NAME;
+		TEST_PATH_OTHERS_PRIVATE_DIR = "/Android/data/" + fakePkg + "/" + TEST_CREATED_DIR;
+
 		initView();
+		prepareFileSharing();
+	}
+
+	@Override
+	protected void onDestroy() {
+		super.onDestroy();
+		setShareResult();
+	}
+
+	@Override
+	public void onBackPressed() {
+		super.onBackPressed();
+		setShareResult();
+	}
+
+	private void prepareFileSharing() {
+		// 生成测试用文件
+		String path = createFileByFileAPI(this.getExternalFilesDir(null).getAbsolutePath() + "/MyPrivate", TEST_NAME, TEST_CONTENT, false);
+
+		// 为文件生成Uri
+		File file = new File(path);
+		if (file != null && file.exists()) {
+			sharableUri = FileProvider.getUriForFile(this,getPackageName()+".fileprovider", file);
+		}
+		Log.d(TAG, "Sharable uri: " + sharableUri);
+
+		// 授予URI一个临时的访问权限
+		grantUriPermissionOfFileProvider(sharableUri);
 	}
 
 	private void initView() {
+		String title = getResources().getString(R.string.app_name) + " - " + getResources().getString(R.string.title_file_share);
+		((TextView)findViewById(R.id.id_file_share_title_tv)).setText(title);
+
 		findViewById(R.id.page_test_create_file_by_file_sdcard_btn).setOnClickListener(this);
 		findViewById(R.id.page_test_read_file_by_file_sdcard_btn).setOnClickListener(this);
 		findViewById(R.id.page_test_create_file_by_file_private_btn).setOnClickListener(this);
@@ -73,19 +150,37 @@ public class FileShareActivity extends BaseActivity {
 		findViewById(R.id.page_test_create_file_by_content_resolver_btn).setOnClickListener(this);
 		findViewById(R.id.page_test_read_file_by_content_resolver_btn).setOnClickListener(this);
 		findViewById(R.id.page_test_delete_others_file_btn).setOnClickListener(this);
+		/** ==============SAF访问iding文件================= */
 		findViewById(R.id.page_test_create_file_by_saf_btn).setOnClickListener(this);
 		findViewById(R.id.page_test_read_file_by_saf_btn).setOnClickListener(this);
+		findViewById(R.id.page_test_edit_file_by_saf_btn).setOnClickListener(this);
+		/** ==============申请指定目录完整访问权，DocumentFile API操作================= */
+		findViewById(R.id.page_test_apply_root_authorization_btn).setOnClickListener(this);
+		findViewById(R.id.page_test_write_root_btn).setOnClickListener(this);
+		findViewById(R.id.page_test_release_root_authorization_btn).setOnClickListener(this);
+		findViewById(R.id.page_test_apply_download_authorization_btn).setOnClickListener(this);
+		findViewById(R.id.page_test_write_download_btn).setOnClickListener(this);
+		findViewById(R.id.page_test_release_download_authorization_btn).setOnClickListener(this);
+		findViewById(R.id.page_test_write_others_private_dir_btn).setOnClickListener(this);
+		findViewById(R.id.page_test_write_media_dir_btn).setOnClickListener(this);
+		findViewById(R.id.page_test_release_all_authorization_btn).setOnClickListener(this);
+		/** ==============FileProvider共享文件================= */
+		findViewById(R.id.page_test_grant_file_provider_btn).setOnClickListener(this);
+		findViewById(R.id.page_test_release_file_provider_btn).setOnClickListener(this);
+		findViewById(R.id.page_test_read_file_by_file_provider_btn).setOnClickListener(this);
+		findViewById(R.id.page_test_edit_file_by_file_provider_btn).setOnClickListener(this);
+		findViewById(R.id.page_test_read_file_by_file_provider_with_intent_btn).setOnClickListener(this);
 	}
 
 	@Override
 	protected void onViewClicked(View v) {
 		int id = v.getId();
 		if (id == R.id.page_test_create_file_by_file_sdcard_btn) {
-			createFileByFileAPI(TEST_PATH_SDCARD, TEST_NAME);
+			createFileByFileAPI(TEST_PATH_SDCARD, TEST_NAME, TEST_CONTENT, true);
 		} else if (id == R.id.page_test_read_file_by_file_sdcard_btn) {
 			readFileByFileAPI(TEST_PATH_SDCARD, TEST_NAME);
 		} else if (id == R.id.page_test_create_file_by_file_private_btn) {
-			createFileByFileAPI(TEST_PATH_PRIVATE_DIR, TEST_NAME);
+			createFileByFileAPI(TEST_PATH_PRIVATE_DIR, TEST_NAME, TEST_CONTENT, true);
 		} else if (id == R.id.page_test_read_file_by_file_private_btn) {
 			readFileByFileAPI(TEST_PATH_PRIVATE_DIR, TEST_NAME);
 		} else if (id == R.id.page_test_create_file_by_media_btn) {
@@ -98,7 +193,7 @@ public class FileShareActivity extends BaseActivity {
 					TEST_DISPLAY_NAME, "test img save use insert");
 		} else if (id == R.id.page_test_read_file_by_content_resolver_btn) {
 			String file = TextUtils.isEmpty(contentResolverCreateFileName) ? TEST_DISPLAY_NAME + ".jpg" : contentResolverCreateFileName;
-			readFileByContentResolver(this, file);
+			readFileByContentResolver(this, MediaStore.Images.Media.EXTERNAL_CONTENT_URI, file);
 		} else if (id == R.id.page_test_delete_others_file_btn) {
 			deleteOthersFile(this, TEST_CREATED_IMG_NAME);
 		} else if (id == R.id.page_test_create_file_by_saf_btn) {
@@ -106,6 +201,71 @@ public class FileShareActivity extends BaseActivity {
 		} else if (id == R.id.page_test_read_file_by_saf_btn) {
 			String file = TextUtils.isEmpty(safCreatedFileName) ? TEST_CREATED_FILE_SAF : safCreatedFileName;
 			readFileBySAF(file);
+		} else if (id == R.id.page_test_edit_file_by_saf_btn) {
+			editFileBySAF();
+		} else if (id == R.id.page_test_apply_root_authorization_btn) {
+			applySpecifiedDirAuth(this, EXTERNAL_ROOT);
+		} else if (id == R.id.page_test_write_root_btn) {
+			// 检查外部存储的根目录是否有权限
+			Uri uri = checkDirPermission(this, EXTERNAL_ROOT);
+			if (uri != null) {
+				// 有权限，则通过根目录uri，在其下任意子目录写文件
+				createFileByRootUri(this, uri, TEST_CREATED_DIR);
+			} else {
+				log("Please apply permission first.");
+			}
+		} else if (id == R.id.page_test_release_root_authorization_btn) {
+			Uri uri = checkDirPermission(this, EXTERNAL_ROOT);
+			// 有权限
+			if (uri != null) {
+				releaseGrantedPermission(this, uri);
+			}
+		} else if (id == R.id.page_test_apply_download_authorization_btn) {
+			applySpecifiedDirAuth(this, EXTERNAL_DOWNLOAD);
+		} else if (id == R.id.page_test_write_download_btn) {
+			// 检查指定目录是否有权限
+			Uri uri = checkDirPermission(this, EXTERNAL_DOWNLOAD);
+			if (uri != null) {
+				// 有权限，则在通过该目录的uri，在其下写文件
+				createFileUnderDir(this, uri);
+			} else {
+				log("Please apply permission first.");
+			}
+		} else if (id == R.id.page_test_release_download_authorization_btn) {
+			Uri uri = checkDirPermission(this, EXTERNAL_DOWNLOAD);
+			// 有权限
+			if (uri != null) {
+				releaseGrantedPermission(this, uri);
+			}
+		} else if (id == R.id.page_test_write_others_private_dir_btn) {
+			Uri uri = checkDirPermission(this, EXTERNAL_ROOT);
+			if (uri != null) {
+				createFileByRootUri(this, uri, TEST_PATH_OTHERS_PRIVATE_DIR);
+			} else {
+				log("Please apply Root dir permission first.");
+			}
+		} else if (id == R.id.page_test_write_media_dir_btn) {
+			Uri uri = checkDirPermission(this, EXTERNAL_ROOT);
+			if (uri != null) {
+				createFileByRootUri(this, uri, EXTERNAL_PICTURES);
+			} else {
+				log("Please apply Root dir permission first.");
+			}
+		} else if (id == R.id.page_test_release_all_authorization_btn) {
+			List<Uri> uris = getPermittedUri(this);
+			for (Uri uri : uris) {
+				releaseGrantedPermission(this, uri);
+			}
+		} else if (id == R.id.page_test_grant_file_provider_btn) {
+			grantUriPermissionOfFileProvider(sharableUri);
+		} else if (id == R.id.page_test_release_file_provider_btn) {
+			releaseUriPermissionOfFileProvider(sharableUri);
+		} else if (id == R.id.page_test_read_file_by_file_provider_btn) {
+			readFileByFileProvider(TEST_SHARABLE_URI_STRING_FAKE);
+		} else if (id == R.id.page_test_edit_file_by_file_provider_btn) {
+			editFileByFileProvider(TEST_SHARABLE_URI_STRING_FAKE);
+		} else if (id == R.id.page_test_read_file_by_file_provider_with_intent_btn) {
+			readFileByFileProviderWithIntent();
 		}
 	}
 
@@ -130,10 +290,56 @@ public class FileShareActivity extends BaseActivity {
 			} else if (resultCode == RESULT_CANCELED) {
 				log("Create file by saf failed.\nUser canceled");
 			}
+		} else if (requestCode == REQUEST_READ_FILE_BY_SAF) {
+			if (resultCode == RESULT_OK) {
+				if (data != null) {
+					Uri uri = data.getData();
+					String result = readStringFromURI(this, uri);
+					log("File read successfully.\n " + result);
+				}
+			} else if (resultCode == RESULT_CANCELED) {
+				log("Read file by saf failed.\nUser canceled");
+			}
+		} else if (requestCode == REQUEST_EDIT_FILE_BY_SAF) {
+			if (resultCode == RESULT_OK) {
+				if (data != null) {
+					Uri uri = data.getData();
+					appendStringIntoUri(this, TEST_CONTENT, uri);
+//					readStringFromURI(this, uri);
+				}
+			} else if (resultCode == RESULT_CANCELED) {
+				log("Edit file by saf failed.\nUser canceled");
+			}
+		} else if (requestCode == REQUEST_APPLY_DIR_AUTH) {
+			if (resultCode == RESULT_OK) {
+				if (data != null) {
+					if (Build.VERSION.SDK_INT >= 19) {
+						Uri uri = data.getData();
+						// 保留该Uri的永久权限
+						getContentResolver().takePersistableUriPermission(uri,
+								Intent.FLAG_GRANT_READ_URI_PERMISSION |
+										Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+
+						String path = UriUtils.getPathOfExternalStorageFromGrantedUri(uri);
+						log("Granted. \nDir: " + path);
+					}
+				}
+			} else if (resultCode == RESULT_CANCELED) {
+				log("Apply dir auth failed.\nUser canceled");
+			}
+		} else if (requestCode == REQUEST_OPEN_ACTIVITY) {
+			if (resultCode == RESULT_OK) {
+				if (data != null) {
+					Uri uri = data.getData();
+					readFileByFileProvider(uri.toString());
+				}
+			} else if (resultCode == RESULT_CANCELED) {
+				log("Read file by file provider failed.\nUser canceled");
+			}
 		}
 	}
 
-	private void createFileByFileAPI(String path, String name) {
+	private String createFileByFileAPI(String path, String name, String content, boolean autoToast) {
 		File file = new File(path, name);
 		if (!file.getParentFile().exists()) {
 			file.getParentFile().mkdirs();
@@ -141,19 +347,40 @@ public class FileShareActivity extends BaseActivity {
 		try {
 			boolean rst = file.createNewFile();
 			if (rst) {
-				String str = "This is content";
+				// 创建成功，写入内容
 				FileOutputStream fos = new FileOutputStream(file);
 				OutputStreamWriter osw = new OutputStreamWriter(fos, "utf-8");
-				osw.append(str);
+				osw.write(content);
+				osw.write(" ");
+				osw.write(DateUtils.getDefaultTime(System.currentTimeMillis()));
+				osw.write("\n");
 				osw.flush();
 				osw.close();
-				log("File created. " + file.getAbsolutePath());
+				if (autoToast) {
+					log("File created. " + file.getAbsolutePath());
+				}
 			} else {
-				log("File already exists. " + file.getAbsolutePath());
+				// 创建失败，可能已经存在
+				if (autoToast) {
+					log("File already exists. " + file.getAbsolutePath());
+				}
+				// 更新文件内容
+				if (file.isFile()) {
+					FileOutputStream fos = new FileOutputStream(file);
+					OutputStreamWriter osw = new OutputStreamWriter(fos, "utf-8");
+					osw.write(content);
+					osw.write(" ");
+					osw.write(DateUtils.getDefaultTime(System.currentTimeMillis()));
+					osw.write("\n");
+					osw.flush();
+					osw.close();
+				}
 			}
+			return file.getAbsolutePath();
 		} catch (IOException e) {
 			log("FAILED\n" + e.getMessage());
 			e.printStackTrace();
+			return "";
 		}
 	}
 
@@ -334,7 +561,7 @@ public class FileShareActivity extends BaseActivity {
 	 * @param context
 	 * @param name 查找时，文件名应该是带有后缀的全称，否则找不到文件
 	 */
-	private void readFileByContentResolver(Context context, String name) {
+	private void readFileByContentResolver(Context context, Uri searchFrom, String name) {
 		/**
 		 * 通过ContentProvider查询文件，获得需要读取的文件Uri
  		 */
@@ -349,7 +576,7 @@ public class FileShareActivity extends BaseActivity {
 		 order：说明查询结果按什么来排序。
 		 */
 		Cursor cursor = context.getContentResolver().query(
-				MediaStore.Images.Media.EXTERNAL_CONTENT_URI, new String[]{MediaStore.Images.Media._ID, MediaStore.Images.Media.DISPLAY_NAME}
+				searchFrom, new String[]{MediaStore.Images.Media._ID, MediaStore.Images.Media.DISPLAY_NAME}
 				, MediaStore.Images.Media.DISPLAY_NAME + "=?", new String[]{name}, null);
 		Log.e(TAG, "cursor size:" + cursor.getCount());
 		Uri photoUri = null;
@@ -366,27 +593,8 @@ public class FileShareActivity extends BaseActivity {
 		/**
 		 * 通过Uri读取文件
  		 */
-		try {
-			ParcelFileDescriptor parcelFileDescriptor = context.getContentResolver().openFileDescriptor(photoUri, "r");
-			FileDescriptor fileDescriptor = parcelFileDescriptor.getFileDescriptor();
-			FileInputStream fis = new FileInputStream(fileDescriptor);
-			InputStreamReader isr = new InputStreamReader(fis, "utf-8");
-			BufferedReader br = new BufferedReader(isr);
-			StringBuffer sb = new StringBuffer();
-			String line = br.readLine();
-			while (line != null) {
-				if (sb.length() > 0) {
-					sb.append("\n");
-				}
-				sb.append(line);
-				line = br.readLine();
-			}
-			br.close();
-			log("File read successfully: " + sb.toString());
-		} catch (Throwable e) {
-			log(e.getMessage());
-			e.printStackTrace();
-		}
+		String content = readStringFromURI(context, photoUri);
+		log("File read successfully.\n " + content);
 
 		/**
 		 * 通过uri还原Bitmap
@@ -489,6 +697,42 @@ public class FileShareActivity extends BaseActivity {
 		startActivityForResult(intent, REQUEST_CREATE_FILE_BY_SAF);
 	}
 
+	private void readFileBySAF(String name) {
+		/**
+		 * 使用DocumentUI检索文件，获取uri
+		 */
+		// ACTION_OPEN_DOCUMENT is the intent to choose a file via the system's file
+		// browser.
+		Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+
+		// Filter to only show results that can be "opened", such as a
+		// file (as opposed to a list of contacts or timezones)
+		intent.addCategory(Intent.CATEGORY_OPENABLE);
+
+		// Filter to show only images, using the image MIME data type.
+		// If one wanted to search for ogg vorbis files, the type would be "audio/ogg".
+		// To search for all documents available via installed storage providers,
+		// it would be "*/*".
+		intent.setType("*/*");
+
+		startActivityForResult(intent, REQUEST_READ_FILE_BY_SAF);
+	}
+
+	private void editFileBySAF() {
+		// ACTION_OPEN_DOCUMENT is the intent to choose a file via the system's
+		// file browser.
+		Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+
+		// Filter to only show results that can be "opened", such as a
+		// file (as opposed to a list of contacts or timezones).
+		intent.addCategory(Intent.CATEGORY_OPENABLE);
+
+		// Filter to show only text files by "text/plain".
+		intent.setType("*/*");
+
+		startActivityForResult(intent, REQUEST_EDIT_FILE_BY_SAF);
+	}
+
 	private String writeStringIntoURI(String content, Uri uri) {
 		String displayName = "";
 		try {
@@ -496,12 +740,17 @@ public class FileShareActivity extends BaseActivity {
 			FileOutputStream fileOutputStream =
 					new FileOutputStream(parcelFileDescriptor.getFileDescriptor());
 			OutputStreamWriter osw = new OutputStreamWriter(fileOutputStream, "utf-8");
-			osw.append(content);
-			fileOutputStream.flush();
+			osw.write(content);
+			osw.write(" ");
+			osw.write(DateUtils.getDefaultTime(System.currentTimeMillis()));
+			osw.write("\n");
 			osw.flush();
+			// Let the document provider know you're done by closing the stream.
 			osw.close();
+			parcelFileDescriptor.close();
 			displayName = getFileNameFromUri(uri);
-			log("File created. file: " + displayName);
+			String path = UriUtils.getPath(this, uri);
+			log("File written. \nFile: " + (TextUtils.isEmpty(path) ? displayName : path));
 		} catch (Exception e) {
 			log("Failed to write string into uri.\n" + e.getMessage());
 			e.printStackTrace();
@@ -509,7 +758,235 @@ public class FileShareActivity extends BaseActivity {
 		return displayName;
 	}
 
-	private void readFileBySAF(String name) {
+	private String readStringFromURI(Context context, Uri uri) {
+		try {
+			ParcelFileDescriptor parcelFileDescriptor = context.getContentResolver().openFileDescriptor(uri, "r");
+			FileDescriptor fileDescriptor = parcelFileDescriptor.getFileDescriptor();
+			FileInputStream fis = new FileInputStream(fileDescriptor);
+			InputStreamReader isr = new InputStreamReader(fis, "utf-8");
+			BufferedReader br = new BufferedReader(isr);
+			StringBuffer sb = new StringBuffer();
+			String line = br.readLine();
+			while (line != null) {
+				if (sb.length() > 0) {
+					sb.append("\n");
+				}
+				sb.append(line);
+				line = br.readLine();
+			}
+			br.close();
+			Log.d(TAG, "File read successfully: " + sb.toString());
+			return sb.toString();
+		} catch (Throwable e) {
+			log(e.getMessage());
+			e.printStackTrace();
+		}
+		return "";
+	}
+
+	private String appendStringIntoUri(Context context, String content, Uri uri) {
+		String originContent = readStringFromURI(context, uri);
+		return writeStringIntoURI(originContent + "\n" + content, uri);
+	}
+
+	/**
+	 * 申请指定目录的完整访问权限
+	 *
+	 * @param context
+	 * @param path
+	 */
+	private void applySpecifiedDirAuth(Context context, String path) {
+		if (Build.VERSION.SDK_INT >= 19) {
+			Uri uri = checkDirPermission(context, path);
+			Log.d(TAG, "Apply dir permission. path: " + path + ", uri: " + uri);
+			if (uri == null) {
+				Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
+				startActivityForResult(intent, REQUEST_APPLY_DIR_AUTH);
+			} else {
+				String realPath = UriUtils.getPathOfExternalStorageFromGrantedUri(uri);
+				log("Already granted, no need to apply. \nDir: " + realPath);
+			}
+		} else {
+			log("API < 19, no need to ask permission");
+		}
+	}
+
+	/**
+	 * 通过制定目录的uri，在其下写文件
+	 *
+	 * @param context
+	 * @param uri
+	 */
+	private void createFileUnderDir(Context context, Uri uri) {
+		if (Build.VERSION.SDK_INT >= 19) {
+			//for directory choose
+			DocumentFile pickedDir = DocumentFile.fromTreeUri(this, uri);
+
+			// Create directory
+			DocumentFile myDir = pickedDir.findFile(TEST_CREATED_DIR);
+			if (myDir != null && myDir.isDirectory()) {
+				Log.d(TAG, "Found dir. dir: " + UriUtils.getPath(context, myDir.getUri()));
+			} else {
+				myDir = pickedDir.createDirectory(TEST_CREATED_DIR);
+				Log.d(TAG, "Create dir. dir: " + UriUtils.getPath(context, myDir.getUri()));
+			}
+			//Create file
+			if (myDir != null && myDir.exists()) {
+				DocumentFile myFile = myDir.findFile(TEST_CREATED_FILE);
+				if (myFile != null && myFile.isFile()) {
+					Log.d(TAG, "Found file. file: " + UriUtils.getPath(context, myFile.getUri()));
+				} else {
+					myFile = myDir.createFile("text/plain", TEST_CREATED_FILE);
+					Log.d(TAG, "Create file. file: " + UriUtils.getPath(context, myFile.getUri()));
+				}
+				appendStringIntoUri(context, TEST_CONTENT, myFile.getUri());
+			}
+		} else {
+			log("API < 19, no need to ask permission");
+		}
+	}
+
+	/**
+	 * 通过获取到的sdcard根目录uri，在指定的subPath下创建文件
+	 *
+	 * @param context
+	 * @param uri
+	 * @param subPath
+	 */
+	private void createFileByRootUri(Context context, Uri uri, String subPath) {
+		if (Build.VERSION.SDK_INT >= 19) {
+//			context.getContentResolver().takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
+			// Exception：Permission denied
+//			readFileByFileAPI("/sdcard/Download/", "FiddlerRoot.cer");
+			// crash：Unsupported Uri content://com.android.externalstorage.documents/tree/primary:Download
+//			readFileByContentResolver(this, uri, "FiddlerRoot.cer");
+
+			/** [DocumentFile API](https://developer.android.com/reference/android/support/v4/provider/DocumentFile.html) */
+			//for directory choose
+			DocumentFile pickedDir = DocumentFile.fromTreeUri(this, uri);
+
+//			// List all existing files inside picked directory
+//			for (DocumentFile file : pickedDir.listFiles()) {
+//				Log.d(TAG, "Found file " + file.getName() + " with size " + file.length());
+//			}
+
+			// Loop create directory
+			String[] subPaths = subPath.split("/");
+			DocumentFile tmpDir = pickedDir;
+			if (subPath != null && subPath.length() > 0) {
+				for (String sub : subPaths) {
+					if (!TextUtils.isEmpty(sub)) {
+						DocumentFile subDir = tmpDir.findFile(sub);
+						if (subDir != null && subDir.isDirectory()) {
+							tmpDir = subDir;
+							Log.d(TAG, "Found dir. dir: " + UriUtils.getPath(context, tmpDir.getUri()));
+						} else {
+							tmpDir = tmpDir.createDirectory(sub);
+							Log.d(TAG, "Create dir. dir: " + UriUtils.getPath(context, tmpDir.getUri()));
+						}
+					}
+				}
+			}
+			//Create file
+			if (tmpDir != null && tmpDir.exists()) {
+				DocumentFile myFile = tmpDir.findFile(TEST_CREATED_FILE);
+				if (myFile != null && myFile.isFile()) {
+					Log.d(TAG, "Found file. file: " + UriUtils.getPath(context, myFile.getUri()));
+				} else {
+					myFile = tmpDir.createFile("text/plain", TEST_CREATED_FILE);
+					Log.d(TAG, "Create file. file: " + UriUtils.getPath(context, myFile.getUri()));
+				}
+				appendStringIntoUri(context, TEST_CONTENT, myFile.getUri());
+			}
+		} else {
+			log("API < 19, no need to ask permission");
+		}
+	}
+
+	private void releaseGrantedPermission(Context context, Uri uri) {
+		if (Build.VERSION.SDK_INT >= 19) {
+			int flags = Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION;
+			context.getContentResolver().releasePersistableUriPermission(uri, flags);
+			String path = UriUtils.getPathOfExternalStorageFromGrantedUri(uri);
+			log("Released. \nDir: " + path);
+		}
+	}
+
+	private void grantUriPermissionOfFileProvider(Uri uri) {
+		if (sharableUri != null) {
+			Intent mainIntent = new Intent(Intent.ACTION_MAIN, null);
+			mainIntent.addCategory(Intent.CATEGORY_LAUNCHER);
+			/**
+			 *
+			 * 参数1 授予权限的app包名，如果不确定是哪个APP使用，就将所有查询出来符合的app都授权
+			 * 参数2 授予权限的URi
+			 * 参数3 授予的读写权限,这里可取 FLAG_GRANT_READ_URI_PERMISSION，FLAG_GRANT_WRITE_URI_PERMISSION,
+			 * 或者都设置上.这个授权将在你调用revokeUriPermission()或者重启设置之前一直有效.
+			 */
+			List<ResolveInfo> resInfoList = getPackageManager()
+					.queryIntentActivities(mainIntent, PackageManager.SIGNATURE_MATCH);
+			for (ResolveInfo resolveInfo : resInfoList) {
+				String packageName = resolveInfo.activityInfo.packageName;
+				if (fakePkg.equals(packageName)) {
+					log("Grant to " + packageName);
+				} else {
+					Log.d(TAG, "Grant to " + packageName);
+				}
+				grantUriPermission(packageName, uri, Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+			}
+		}
+	}
+
+	private void releaseUriPermissionOfFileProvider(Uri uri) {
+		this.revokeUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+		log("Release uri permission. \nuri: " + uri);
+	}
+
+	/**
+	 * 本地硬编码其他应用共享的文件Uri，然后跨应用读取，失败
+	 *
+	 * @param uriStr
+	 */
+	private void readFileByFileProvider(String uriStr) {
+		try {
+			Uri uri = Uri.parse(uriStr);
+			Log.d(TAG, "Read file from uri: " + uri);
+
+			String displayName = getFileNameFromUri(uri);
+			// Q开始无法通过该方法获取文件路径
+			String path = UriUtils.getPath(this, uri);
+			String file = TextUtils.isEmpty(path) ? displayName : path;
+			String content = readStringFromURI(this, uri);
+			log("File: " + file + "\nContent:\n" + content);
+		} catch (Throwable t) {
+			t.printStackTrace();
+			log(t.getMessage());
+		}
+	}
+
+	private void editFileByFileProvider(String uriStr) {
+		Uri uri = Uri.parse(uriStr);
+		Log.d(TAG, "Edit file by uri: " + uri);
+		appendStringIntoUri(this, TEST_CONTENT, uri);
+	}
+
+	private void readFileByFileProviderWithIntent() {
+		// Activity的全路径是固定的，不需要根据包名区分
+		String activity_path = "com.example.weishj.mytester.ui.FileShareActivity";
+		ComponentName comp = new ComponentName(fakePkg, activity_path);
+		Intent intent = new Intent();
+//		intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);//可选
+		intent.setComponent(comp);
+		startActivityForResult(intent, REQUEST_OPEN_ACTIVITY);
+	}
+
+	/** =============================================================================================== */
+
+	/**
+	 * 这只是一个测试方法，用于测试使用ContentResolver读取/Downloads文件夹，结果是无法读取
+	 * @param name
+	 */
+	private void readDownloadsByContentResolver(String name) {
 		if (TextUtils.isEmpty(name)) {
 			log("请先使用SAF创建一个文件，再读取");
 			return;
@@ -523,23 +1000,25 @@ public class FileShareActivity extends BaseActivity {
 				 *
 				 * 注意：无法通过以下方式获取/Download文件夹下的文件
 				 */
-//				List<Uri> photoUris = new ArrayList<>();
-//				Cursor cursor = this.getContentResolver().query(
-//						MediaStore.Downloads.EXTERNAL_CONTENT_URI, new String[]{MediaStore.Downloads._ID, MediaStore.Downloads.DISPLAY_NAME}
-//						, null, null, null);
-//				Log.e(TAG, "cursor size:" + cursor.getCount());
-//				Uri uri = null;
-//				while (cursor.moveToNext()) {
-//					int id = cursor.getInt(cursor
-//							.getColumnIndex(MediaStore.Downloads._ID));
-//					uri = Uri.parse(MediaStore.Downloads.EXTERNAL_CONTENT_URI.toString() + File.separator + id);
-//					String displayName = cursor.getString(cursor.getColumnIndex(MediaStore.Downloads.DISPLAY_NAME));
-//					Log.e(TAG, "photoUri:" + uri +  ", displayName: " + displayName);
-//					photoUris.add(uri);
-//				}
-//				cursor.close();
-
+				List<Uri> photoUris = new ArrayList<>();
+				Cursor cursor = this.getContentResolver().query(
+						MediaStore.Downloads.EXTERNAL_CONTENT_URI, new String[]{MediaStore.Downloads._ID, MediaStore.Downloads.DISPLAY_NAME}
+						, null, null, null);
+				Log.e(TAG, "cursor size:" + cursor.getCount());
 				Uri uri = null;
+				while (cursor.moveToNext()) {
+					int id = cursor.getInt(cursor
+							.getColumnIndex(MediaStore.Downloads._ID));
+					uri = Uri.parse(MediaStore.Downloads.EXTERNAL_CONTENT_URI.toString() + File.separator + id);
+					String displayName = cursor.getString(cursor.getColumnIndex(MediaStore.Downloads.DISPLAY_NAME));
+					Log.e(TAG, "photoUri:" + uri +  ", displayName: " + displayName);
+					photoUris.add(uri);
+				}
+				cursor.close();
+
+				/**
+				 * 通过uri读取文件
+				 */
 				if (uri != null) {
 					// 从 URI 中获取 InputStream，写入字符串
 					InputStream inputStream = getContentResolver().openInputStream(uri);
@@ -609,5 +1088,54 @@ public class FileShareActivity extends BaseActivity {
 			cursor.close();
 		}
 		return displayName;
+	}
+
+	private List<Uri> getPermittedUri(Context context) {
+		List<Uri> uris = new ArrayList<>();
+		if (Build.VERSION.SDK_INT >= 19) {
+			List<UriPermission> uriPermissions = context.getContentResolver().getPersistedUriPermissions();
+			for (UriPermission uriPermission : uriPermissions) {
+				uris.add(uriPermission.getUri());
+			}
+		}
+		return uris;
+	}
+
+	/**
+	 * 检查给定的目录是否具备SAF授予的访问权限
+	 *
+	 * @param context
+	 * @param root
+	 * @return
+	 */
+	private Uri checkDirPermission(Context context, String root) {
+		Uri tmpUri = null;
+		if (Build.VERSION.SDK_INT >= 19) {
+			tmpUri = null;
+			List<Uri> uris = getPermittedUri(context);
+			for (Uri uri : uris) {
+				String path = UriUtils.getPathOfExternalStorageFromGrantedUri(uri);
+				if (root.equals(path)) {
+					tmpUri = uri;
+					break;
+				}
+			}
+			return tmpUri;
+		} else {
+			log("API < 19, no need to ask permission");
+			return tmpUri;
+		}
+	}
+
+	private void startApp(String pkgName) {
+		PackageManager packageManager = this.getPackageManager();
+		Intent it = packageManager.getLaunchIntentForPackage(pkgName);
+		startActivityForResult(it, REQUEST_OPEN_ACTIVITY);
+	}
+
+	private void setShareResult() {
+		Intent intent = new Intent();
+		intent.setData(sharableUri);
+		setResult(RESULT_OK, intent);
 	}
 }

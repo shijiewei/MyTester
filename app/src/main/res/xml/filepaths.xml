@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+	<!-- Context.getExternalFilesDir(null) -->
+	<external-files-path
+		name="my_private_dir_files"
+		path="MyPrivate" />
+	<!-- Environment.getExternalStorageDirectory() -->
+	<external-path
+		name="my_public_dir_files"
+		path="MyPublic" />
+</paths>

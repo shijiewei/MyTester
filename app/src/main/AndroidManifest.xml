@@ -32,7 +32,18 @@
 		<activity android:name=".ui.CustomizedViewActivity"/>
 		<activity android:name=".ui.FileMonitorActivity"/>
 		<activity android:name=".ui.BackServiceActivity"/>
-		<activity android:name=".ui.FileShareActivity"/>
+		<!-- exported="true" 属性用于测试通过Intent.setComponent()方式打开其他应用的指定Activity，被打开的Activity必须设为true-->
+		<activity android:name=".ui.FileShareActivity" android:exported="true"/>
+
+		<provider
+			android:name="android.support.v4.content.FileProvider"
+			android:authorities="${applicationId}.fileprovider"
+			android:grantUriPermissions="true"
+			android:exported="false">
+			<meta-data
+				android:name="android.support.FILE_PROVIDER_PATHS"
+				android:resource="@xml/filepaths" />
+		</provider>
 	</application>
 
 </manifest>
