@@ -48,14 +48,14 @@
 					android:layout_weight="1"
 					android:layout_marginRight="10dp"
 					android:textSize="14sp"
-					android:text="File API 创建文件(sdcard)"/>
+					android:text="File创建文件(sdcard)"/>
 				<Button
 					android:id="@+id/page_test_read_file_by_file_sdcard_btn"
 					android:layout_width="0dp"
 					android:layout_height="wrap_content"
 					android:layout_weight="1"
 					android:textSize="14sp"
-					android:text="File API 读取文件(sdcard)"/>
+					android:text="File读取文件(sdcard)"/>
 			</LinearLayout>
 			<LinearLayout
 				android:layout_width="match_parent"
@@ -69,14 +69,14 @@
 					android:layout_weight="1"
 					android:layout_marginRight="10dp"
 					android:textSize="14sp"
-					android:text="File API 创建文件(私有目录)"/>
+					android:text="File创建文件(私有目录)"/>
 				<Button
 					android:id="@+id/page_test_read_file_by_file_private_btn"
 					android:layout_width="0dp"
 					android:layout_height="wrap_content"
 					android:layout_weight="1"
 					android:textSize="14sp"
-					android:text="File API 读取文件(私有目录)"/>
+					android:text="File读取文件(私有目录)"/>
 			</LinearLayout>
 			<View
 				android:layout_width="match_parent"
@@ -101,14 +101,27 @@
 					android:layout_weight="1"
 					android:layout_marginRight="10dp"
 					android:textSize="14sp"
-					android:text="MediaStore 创建文件"/>
+					android:text="MS创建图片"/>
 				<Button
 					android:id="@+id/page_test_read_file_by_media_btn"
 					android:layout_width="0dp"
 					android:layout_height="wrap_content"
 					android:layout_weight="1"
 					android:textSize="14sp"
-					android:text="MediaStore 读取文件"/>
+					android:text="MS读取图片"/>
+			</LinearLayout>
+			<LinearLayout
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:layout_marginBottom="10dp"
+				android:orientation="horizontal">
+				<Button
+					android:id="@+id/page_test_delete_file_by_media_btn"
+					android:layout_width="0dp"
+					android:layout_height="wrap_content"
+					android:layout_weight="1"
+					android:textSize="14sp"
+					android:text="删除MS图片(自己的/别人的)"/>
 			</LinearLayout>
 			<LinearLayout
 				android:layout_width="match_parent"
@@ -122,14 +135,14 @@
 					android:layout_weight="1"
 					android:layout_marginRight="10dp"
 					android:textSize="14sp"
-					android:text="ContentResolver 创建文件"/>
+					android:text="CR创建文件"/>
 				<Button
 					android:id="@+id/page_test_read_file_by_content_resolver_btn"
 					android:layout_width="0dp"
 					android:layout_height="wrap_content"
 					android:layout_weight="1"
 					android:textSize="14sp"
-					android:text="ContentResolver 读取文件"/>
+					android:text="CR读取文件"/>
 			</LinearLayout>
 			<LinearLayout
 				android:layout_width="match_parent"
@@ -137,13 +150,12 @@
 				android:layout_marginBottom="10dp"
 				android:orientation="horizontal">
 				<Button
-					android:id="@+id/page_test_delete_others_file_btn"
+					android:id="@+id/page_test_delete_file_by_content_resolver_btn"
 					android:layout_width="0dp"
 					android:layout_height="wrap_content"
 					android:layout_weight="1"
-					android:layout_marginRight="10dp"
 					android:textSize="14sp"
-					android:text="删除其他应用的媒体文件(需删除MediaStore创建的)"/>
+					android:text="删除CR文件(自己的/别人的)"/>
 			</LinearLayout>
 			<View
 				android:layout_width="match_parent"
@@ -267,7 +279,21 @@
 					android:layout_weight="1"
 					android:layout_marginRight="10dp"
 					android:textSize="14sp"
-					android:text="写其他应用私有目录"/>
+					android:text="写别人私有目录"/>
+				<Button
+					android:id="@+id/page_test_read_others_private_dir_btn"
+					android:layout_width="0dp"
+					android:layout_height="wrap_content"
+					android:layout_weight="1"
+					android:layout_marginRight="10dp"
+					android:textSize="14sp"
+					android:text="读别人私有目录"/>
+			</LinearLayout>
+			<LinearLayout
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:layout_marginBottom="10dp"
+				android:orientation="horizontal">
 				<Button
 					android:id="@+id/page_test_write_media_dir_btn"
 					android:layout_width="0dp"
@@ -275,7 +301,15 @@
 					android:layout_weight="1"
 					android:layout_marginRight="10dp"
 					android:textSize="14sp"
-					android:text="写媒体集合目录"/>
+					android:text="写媒体目录"/>
+				<Button
+					android:id="@+id/page_test_read_media_dir_by_media_store_btn"
+					android:layout_width="0dp"
+					android:layout_height="wrap_content"
+					android:layout_weight="1"
+					android:layout_marginRight="10dp"
+					android:textSize="14sp"
+					android:text="MS读媒体目录(失败)"/>
 			</LinearLayout>
 			<LinearLayout
 				android:layout_width="match_parent"
