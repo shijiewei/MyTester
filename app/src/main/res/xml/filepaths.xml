@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- 标准FileProvider需要该文件，本测试应用中其实是使用自定义FileProvider，不需要该文件 -->
 <paths>
 	<!-- Context.getExternalFilesDir(null) -->
 	<external-files-path

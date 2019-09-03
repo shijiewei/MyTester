@@ -4,8 +4,11 @@ android {
     compileSdkVersion 29
     buildToolsVersion "28.0.3"
     defaultConfig {
+        // 包名只能是com.example.mytester或com.example.fake，不能随意修改，
+        // 该包名用于FileShareActivity中测试FileProvider共享文件
         applicationId "com.example.mytester"
-        minSdkVersion 16
+        // FileShareActivity中用到的DocumentFile要求minSdkVersion=21
+        minSdkVersion 21
         targetSdkVersion 29
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
@@ -38,7 +41,7 @@ android {
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile "com.android.support:support-v4:+"
+//    compile "com.android.support:support-v4:+"
     // LeakCanary(only for dev)
     // required if you want to use Mockito for unit tests
     // required if you want to use Powermock for unit tests

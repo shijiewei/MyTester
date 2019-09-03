@@ -9,7 +9,7 @@ import android.content.Intent;
 import android.content.IntentSender;
 import android.content.UriPermission;
 import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
+import android.content.pm.ProviderInfo;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -20,8 +20,6 @@ import android.os.Environment;
 import android.os.ParcelFileDescriptor;
 import android.provider.MediaStore;
 import android.provider.OpenableColumns;
-import android.support.v4.content.FileProvider;
-import android.support.v4.provider.DocumentFile;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
@@ -30,6 +28,9 @@ import android.widget.Toast;
 
 import com.example.weishj.mytester.BaseActivity;
 import com.example.weishj.mytester.R;
+import com.example.content.CustomizedFileProvider;
+import com.example.weishj.mytester.provider.DocumentFile;
+import com.example.weishj.mytester.util.Const;
 import com.example.weishj.mytester.util.DateUtils;
 import com.example.weishj.mytester.util.UriUtils;
 
@@ -55,6 +56,7 @@ import java.util.List;
  */
 public class FileShareActivity extends BaseActivity {
 	private static final String TAG = "FileShareActivity";
+	private static final String FILE_PROVIDER_NAME = "mob_file_provider";
 	private static final String TEST_CREATED_DIR = "AMyDir";
 	private static final String TEST_CREATED_FILE = ".txt";
 	// /sdcard
@@ -74,8 +76,10 @@ public class FileShareActivity extends BaseActivity {
 	private static final int REQUEST_EDIT_FILE_BY_SAF = 1004;
 	private static final int REQUEST_APPLY_DIR_AUTH = 1005;
 	private static final int REQUEST_OPEN_ACTIVITY = 1006;
-	private static String TEST_SHARABLE_URI_STRING_FAKE;
-	private static String TEST_SHARABLE_URI_STRING_MYSELF;
+	private String FILE_PROVIDER_WHOLE_URI_FAKE;
+	private String FILE_FPOVIDER_AUTHORITY_FAKE;
+	private String FILE_PROVIDER_WHOLE_URI_MYSELF;
+	private String FILE_FPOVIDER_AUTHORITY_MYSELF;
 	private static String TEST_CONTENT;
 	// /sdcard/Android/data/<pkgName>/files
 	private String TEST_PATH_UNDER_PRIVATE_DIR;
@@ -104,9 +108,18 @@ public class FileShareActivity extends BaseActivity {
 		} else {
 			fakePkg = "com.example.mytester";
 		}
+
+		// 查询当前设备中有哪些应用注册了我们的CustomizedFileProvider（不包含自己）
+		List<String> mobPkgs = queryInstalledMobPkg(this);
+
+		// 测试只用两个应用相互共享，因此这里简单的取index=0的，不做循环处理
+		if (mobPkgs != null && !mobPkgs.isEmpty()) {
+			FILE_FPOVIDER_AUTHORITY_FAKE = mobPkgs.get(0) + "." + FILE_PROVIDER_NAME;
+		}
 		// 模拟本地硬编码其他应用共享的文件uri，通过FileProvider读取文件，这里的uri规则必须与/res/xml/filepaths.xml中定义的值匹配
-		TEST_SHARABLE_URI_STRING_FAKE = "content://" + fakePkg + ".fileprovider/my_private_dir_files/" + TEST_NAME;
-		TEST_SHARABLE_URI_STRING_MYSELF = "content://" + myPkg + ".fileprovider/my_private_dir_files/" + TEST_NAME;
+		FILE_PROVIDER_WHOLE_URI_FAKE = "content://" + FILE_FPOVIDER_AUTHORITY_FAKE + "/" + Const.SHARABLE_PATH_ALIAS + "/" + TEST_NAME;
+		FILE_FPOVIDER_AUTHORITY_MYSELF = myPkg + "." + FILE_PROVIDER_NAME;
+		FILE_PROVIDER_WHOLE_URI_MYSELF = "content://" + FILE_FPOVIDER_AUTHORITY_MYSELF + "/" + Const.SHARABLE_PATH_ALIAS + "/" + TEST_NAME;
 		TEST_PATH_OTHERS_PRIVATE_DIR = "/Android/data/" + fakePkg + "/" + TEST_CREATED_DIR;
 		PRIVATE_DIR_MYSELF = "/Android/data/" + myPkg;
 		PRIVATE_DIR_OTHERS = "/Android/data/" + fakePkg;
@@ -209,7 +222,8 @@ public class FileShareActivity extends BaseActivity {
 			editFileBySAF();
 		} else if (id == R.id.page_test_apply_root_authorization_btn) {
 			applyDirPermission(this, EXTERNAL_ROOT);
-		} else if (id == R.id.page_test_write_root_btn) {
+		}
+		else if (id == R.id.page_test_write_root_btn) {
 			// 检查外部存储的根目录是否有权限
 			Uri uri = checkDirPermission(this, EXTERNAL_ROOT);
 			if (uri != null) {
@@ -262,7 +276,8 @@ public class FileShareActivity extends BaseActivity {
 			} else {
 				log("Please apply Root dir permission first.");
 			}
-		} else if (id == R.id.page_test_read_media_dir_by_media_store_btn) {
+		}
+		else if (id == R.id.page_test_read_media_dir_by_media_store_btn) {
 			/*
 			 * 这只是用于测试是否可以通过MediaStore方式读取DocumentFile在媒体目录下创建的文件，
 			 * 结果是不行（因为文件虽然创建了，但没有插入媒体数据库，所以无法查询到目标文件uri）
@@ -278,9 +293,9 @@ public class FileShareActivity extends BaseActivity {
 		} else if (id == R.id.page_test_release_file_provider_btn) {
 			releasePermissionOfFileProvider(sharableUri);
 		} else if (id == R.id.page_test_read_file_by_file_provider_btn) {
-			readFileByFileProvider(TEST_SHARABLE_URI_STRING_FAKE);
+			readFileByFileProvider(FILE_PROVIDER_WHOLE_URI_FAKE);
 		} else if (id == R.id.page_test_edit_file_by_file_provider_btn) {
-			editFileByFileProvider(TEST_SHARABLE_URI_STRING_FAKE);
+			editFileByFileProvider(FILE_PROVIDER_WHOLE_URI_FAKE);
 		} else if (id == R.id.page_test_read_file_by_file_provider_with_intent_btn) {
 			readFileByFileProviderWithIntent();
 		}
@@ -1019,25 +1034,20 @@ public class FileShareActivity extends BaseActivity {
 	 */
 	private void grantPermissionForFileProvider(Uri uri) {
 		if (sharableUri != null) {
-			Intent mainIntent = new Intent(Intent.ACTION_MAIN, null);
-			mainIntent.addCategory(Intent.CATEGORY_LAUNCHER);
-			/**
-			 *
-			 * 参数1 授予权限的app包名，如果不确定是哪个APP使用，就将所有查询出来符合的app都授权
-			 * 参数2 授予权限的URi
-			 * 参数3 授予的读写权限,这里可取 FLAG_GRANT_READ_URI_PERMISSION，FLAG_GRANT_WRITE_URI_PERMISSION,
-			 * 或者都设置上.这个授权将在你调用revokeUriPermission()或者重启设置之前一直有效.
-			 */
-			List<ResolveInfo> resInfoList = getPackageManager()
-					.queryIntentActivities(mainIntent, PackageManager.SIGNATURE_MATCH);
-			for (ResolveInfo resolveInfo : resInfoList) {
-				String packageName = resolveInfo.activityInfo.packageName;
-				if (fakePkg.equals(packageName)) {
-					log("Grant to " + packageName);
-				} else {
-					Log.d(TAG, "Grant to " + packageName);
+			List<String> mobPkgs = queryInstalledMobPkg(this);
+			if (mobPkgs != null && !mobPkgs.isEmpty()) {
+				for (String pkg : mobPkgs) {
+					/**
+					 *
+					 * 参数1 授予权限的app包名，如果不确定是哪个APP使用，就将所有查询出来符合的app都授权
+					 * 参数2 授予权限的URi
+					 * 参数3 授予的读写权限,这里可取 FLAG_GRANT_READ_URI_PERMISSION，FLAG_GRANT_WRITE_URI_PERMISSION,
+					 * 或者都设置上.这个授权将在你调用revokeUriPermission()或者重启设置之前一直有效.
+					 */
+					grantUriPermission(pkg, uri,
+							Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+					log("Grant to " + pkg);
 				}
-				grantUriPermission(packageName, uri, Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
 			}
 		}
 	}
@@ -1115,7 +1125,7 @@ public class FileShareActivity extends BaseActivity {
 		// 为文件生成Uri
 		File file = new File(path);
 		if (file != null && file.exists()) {
-			sharableUri = FileProvider.getUriForFile(this,getPackageName()+".fileprovider", file);
+			sharableUri = CustomizedFileProvider.getUriForFile(this,FILE_FPOVIDER_AUTHORITY_MYSELF, file);
 		}
 		Log.d(TAG, "Sharable uri: " + sharableUri);
 
@@ -1248,7 +1258,9 @@ public class FileShareActivity extends BaseActivity {
 			}
 			Log.e(TAG, "File: " + displayName + ", Size: " + size);
 		} finally {
-			cursor.close();
+			if (cursor != null) {
+				cursor.close();
+			}
 		}
 		return displayName;
 	}
@@ -1306,5 +1318,29 @@ public class FileShareActivity extends BaseActivity {
 		Intent intent = new Intent();
 		intent.setData(sharableUri);
 		setResult(RESULT_OK, intent);
+	}
+
+	private List<String> queryInstalledMobPkg(Context context) {
+		List<String> pkgs = new ArrayList<>();
+		try {
+			List<ProviderInfo> providerInfos = context.getPackageManager().queryContentProviders(null, 0, PackageManager.MATCH_ALL);
+			if (providerInfos != null) {
+				for (ProviderInfo pri : providerInfos) {
+					Log.d(TAG, "Provider info:" + pri);
+					String authority = pri.authority;
+					// FileProvider 的name格式：${applicationId}.mob_file_provider
+					if (!TextUtils.isEmpty(authority) && authority.contains(FILE_PROVIDER_NAME)) {
+						// 排除本应用
+						String pkg = pri.packageName;
+						if (!context.getPackageName().equals(pkg)) {
+							pkgs.add(pkg);
+						}
+					}
+				}
+			}
+		} catch (Throwable t) {
+			t.printStackTrace();
+		}
+		return pkgs;
 	}
 }

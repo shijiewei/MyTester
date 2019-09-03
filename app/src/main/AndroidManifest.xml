@@ -35,14 +35,23 @@
 		<!-- exported="true" 属性用于测试通过Intent.setComponent()方式打开其他应用的指定Activity，被打开的Activity必须设为true-->
 		<activity android:name=".ui.FileShareActivity" android:exported="true"/>
 
+		<!-- 标准FileProvider用法，需要指定filepaths.xml文件 -->
+		<!--<provider-->
+			<!--android:name="android.support.v4.content.FileProvider"-->
+			<!--android:authorities="${applicationId}.mob_file_provider"-->
+			<!--android:grantUriPermissions="true"-->
+			<!--android:exported="false">-->
+			<!--<meta-data-->
+				<!--android:name="android.support.FILE_PROVIDER_PATHS"-->
+				<!--android:resource="@xml/filepaths" />-->
+		<!--</provider>-->
+
+		<!-- 为了省去filepaths.xml文件，这里使用自定义FileProvider -->
 		<provider
-			android:name="android.support.v4.content.FileProvider"
-			android:authorities="${applicationId}.fileprovider"
+			android:name="com.example.content.CustomizedFileProvider"
+			android:authorities="${applicationId}.mob_file_provider"
 			android:grantUriPermissions="true"
 			android:exported="false">
-			<meta-data
-				android:name="android.support.FILE_PROVIDER_PATHS"
-				android:resource="@xml/filepaths" />
 		</provider>
 	</application>
 
