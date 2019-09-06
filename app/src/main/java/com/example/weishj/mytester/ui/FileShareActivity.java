@@ -1090,9 +1090,28 @@ public class FileShareActivity extends BaseActivity {
 	 * @param uriStr
 	 */
 	private void editFileByFileProvider(String uriStr) {
-		Uri uri = Uri.parse(uriStr);
+		final Uri uri = Uri.parse(uriStr);
 		Log.d(TAG, "Edit file by uri: " + uri);
 		appendStringIntoUri(this, TEST_CONTENT, uri);
+
+		// 测试多进程共同写一个文件，结果：a、b（几乎）同时写c共享的文件时，只有a或b会成功，另一个的数据会丢失。
+//		new Thread(new Runnable() {
+//			@Override
+//			public void run() {
+//				int i = 0;
+//				while (i < 100) {
+//					String content = TEST_CONTENT + "/" + i;
+//					Log.d("abcba", content);
+//					appendStringIntoUri(getApplicationContext(), content, uri);
+//					i ++;
+//					try {
+//						Thread.sleep(100);
+//					} catch (InterruptedException e) {
+//						e.printStackTrace();
+//					}
+//				}
+//			}
+//		}).start();
 	}
 
 	/**
@@ -1112,9 +1131,14 @@ public class FileShareActivity extends BaseActivity {
 
 	/** =============================================================================================== */
 
-	private void log(String msg) {
+	private void log(final String msg) {
 		Log.d(TAG, msg);
-		Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+		runOnUiThread(new Runnable() {
+			@Override
+			public void run() {
+				Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_SHORT).show();
+			}
+		});
 	}
 
 	private void prepareShareByFileProvider() {
