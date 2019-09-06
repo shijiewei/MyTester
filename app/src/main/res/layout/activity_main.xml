@@ -104,6 +104,19 @@
 					android:text="@string/title_file_share"
 					android:textSize="@dimen/btn_text_size"/>
 			</LinearLayout>
+			<LinearLayout
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:orientation="horizontal">
+				<Button
+					android:id="@+id/btn_read_contact"
+					android:layout_width="0dp"
+					android:layout_height="wrap_content"
+					android:layout_weight="1"
+					android:layout_marginBottom="@dimen/btn_marginBottom"
+					android:text="@string/title_read_contact"
+					android:textSize="@dimen/btn_text_size"/>
+			</LinearLayout>
 		</LinearLayout>
 	</ScrollView>
 </LinearLayout>

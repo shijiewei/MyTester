@@ -24,6 +24,7 @@ import com.example.weishj.mytester.ui.CustomizedViewActivity;
 import com.example.weishj.mytester.ui.FileMonitorActivity;
 import com.example.weishj.mytester.ui.FileShareActivity;
 import com.example.weishj.mytester.ui.MemoryLeakActivity;
+import com.example.weishj.mytester.ui.ReadContactActivity;
 import com.example.weishj.mytester.ui.RouterActivity;
 import com.example.weishj.mytester.ui.WlanActivity;
 import com.example.weishj.mytester.util.CmccAESTest;
@@ -56,6 +57,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
 		findViewById(R.id.btn_file_monitor_test).setOnClickListener(this);
 		findViewById(R.id.btn_backservice).setOnClickListener(this);
 		findViewById(R.id.btn_file_share).setOnClickListener(this);
+		findViewById(R.id.btn_read_contact).setOnClickListener(this);
 
 		// CMCCAESTest
 		String key = "8F39703DD5D64A6D";
@@ -67,35 +69,30 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
 	public void onClick(View v) {
 		int id = v.getId();
 		if (id == R.id.btn_handler) {
-			MyLog.d(TAG, "btn_handler clicked");
 			BaseClt.startCollectors(mContext);
 		} else if (id == R.id.btn_memory_leak) {
-			MyLog.d(TAG, "btn_memory_leak clicked");
 			Intent i = new Intent(this, MemoryLeakActivity.class);
 			startActivity(i);
 		} else if (id == R.id.btn_router) {
-			MyLog.d(TAG, "btn_router clicked");
 			Intent i = new Intent(this, RouterActivity.class);
 			startActivity(i);
 		} else if (id == R.id.btn_wlan) {
-			MyLog.d(TAG, "btn_wlan clicked");
 			Intent i = new Intent(this, WlanActivity.class);
 			startActivity(i);
 		} else if (id == R.id.btn_customizedView) {
-			MyLog.d(TAG, "btn_customizedView clicked");
 			Intent i = new Intent(this, CustomizedViewActivity.class);
 			startActivity(i);
 		} else if (id == R.id.btn_file_monitor_test) {
-			MyLog.d(TAG, "btn_file_monitor_test clicked");
 			Intent i = new Intent(this, FileMonitorActivity.class);
 			startActivity(i);
 		} else if (id == R.id.btn_backservice) {
-			MyLog.d(TAG, "btn_backservice clicked");
 			Intent i = new Intent(this, BackServiceActivity.class);
 			startActivity(i);
 		} else if (id == R.id.btn_file_share) {
-			MyLog.d(TAG, "btn_file_share clicked");
 			Intent i = new Intent(this, FileShareActivity.class);
+			startActivity(i);
+		} else if (id == R.id.btn_read_contact) {
+			Intent i = new Intent(this, ReadContactActivity.class);
 			startActivity(i);
 		}
 	}

@@ -11,6 +11,7 @@
 	<string name="title_file_monitor_test">文件监控测试</string>
 	<string name="title_back_service">后台服务列表</string>
 	<string name="title_file_share">文件共享</string>
+	<string name="title_read_contact">读取联系人</string>
 
 	<!-- RouterActivity -->
 	<string name="router_label_ip">IP 地址</string>
