@@ -17,7 +17,7 @@ public class MyContentProvider extends ContentProvider {
 	private static final String TAG = "MyContentProvider";
 	public static final String CONTENT_PROVIDER_AUTHORITY = "com.example.mytester.provider";
 
-	// Creates a UriMatcher object.
+	// Creates a UriMatcher lock.
 	private static final UriMatcher uriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
 
 	static {

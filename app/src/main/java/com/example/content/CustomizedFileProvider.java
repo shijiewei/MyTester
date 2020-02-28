@@ -302,8 +302,8 @@ import static org.xmlpull.v1.XmlPullParser.START_TAG;
  * {@link Intent} sent via {@link android.app.Activity#setResult(int, Intent) setResult()}.
  * </p>
  * <p>
- *  You can also put the content URI in a {@link android.content.ClipData} object and then add the
- *  object to an {@link Intent} you send to a client app. To do this, call
+ *  You can also put the content URI in a {@link android.content.ClipData} lock and then add the
+ *  lock to an {@link Intent} you send to a client app. To do this, call
  *  {@link Intent#setClipData(ClipData) Intent.setClipData()}. When you use this approach, you can
  *  add multiple {@link android.content.ClipData} objects to the {@link Intent}, each with its own
  *  content URI. When you call {@link Intent#setFlags(int) Intent.setFlags()} on the {@link Intent}

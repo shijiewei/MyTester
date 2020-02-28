@@ -1,6 +1,6 @@
 package com.example.weishj.mytester.thread;
 
-public class WaitNotify2 {
+public class WaitNotify3 {
 	public static byte[] lock = new byte[0];
 
 	public static void main(String[] args) {
@@ -14,11 +14,11 @@ public class WaitNotify2 {
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
-		System.out.println("开始case2");
-		Thread1 thread3 = new Thread1("t3");
-		Thread2 thread4 = new Thread2("t4");
-		// 错误，先执行2，后执行1，线程1会永远wait
-		testCase(thread4, thread3);
+//		System.out.println("开始case2");
+//		Thread1 thread3 = new Thread1("t3");
+//		Thread2 thread4 = new Thread2("t4");
+//		// 错误，先执行2，后执行1，线程1会永远wait
+//		testCase(thread4, thread3);
 	}
 
 	private static void testCase(Thread firstRun, Thread secondRun) {
@@ -58,17 +58,22 @@ public class WaitNotify2 {
 
 		@Override
 		public void run() {
-			synchronized (lock) {
-				System.out.println("线程"+Thread.currentThread().getName()+" 开始");
-				try {
-					sleep(1000);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
+			try {
+				synchronized (lock) {
+					System.out.println("线程"+Thread.currentThread().getName()+" 开始");
+					try {
+						sleep(1000);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+					throw new RuntimeException("test exception");
 				}
-				lock.notify();
-				System.out.println("线程"+Thread.currentThread().getName()+"调用了object.notify()");
+			} finally {
+				synchronized (lock) {
+					lock.notifyAll();
+					System.out.println("线程"+Thread.currentThread().getName()+"调用了object.notify()");
+				}
 			}
-			System.out.println("线程"+Thread.currentThread().getName()+"释放了锁");
 		}
 	}
 }

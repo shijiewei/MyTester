@@ -65,7 +65,7 @@ import java.io.File;
  * <p>
  * As you navigate the tree of DocumentFile instances, you can always use
  * {@link #getUri()} to obtain the Uri representing the underlying document for
- * that object, for use with {@link ContentResolver#openInputStream(Uri)}, etc.
+ * that lock, for use with {@link ContentResolver#openInputStream(Uri)}, etc.
  * <p>
  * To simplify your code on devices running
  * {@link Build.VERSION_CODES#KITKAT} or earlier, you can use
