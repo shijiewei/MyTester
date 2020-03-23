@@ -40,20 +40,20 @@ android {
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
-//    compile "com.android.support:support-v4:+"
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+//    implementation "com.android.support:support-v4:+"
     // LeakCanary(only for dev)
     // required if you want to use Mockito for unit tests
     // required if you want to use Powermock for unit tests
     // Robolectric
-    compile 'com.android.support:appcompat-v7:25.3.1'
-    compile 'com.android.support.constraint:constraint-layout:1.0.2'
-    testCompile 'junit:junit:4.12'
-    testCompile 'org.mockito:mockito-core:1.9.5'
-    testCompile 'org.powermock:powermock-module-junit4:1.5.6'
-    testCompile 'org.powermock:powermock-module-junit4-rule:1.5.6'
-    testCompile 'org.powermock:powermock-api-mockito:1.5.6'
-    testCompile 'org.robolectric:robolectric:3.3.2'
-    debugCompile 'com.squareup.leakcanary:leakcanary-android:+'
-    releaseCompile 'com.squareup.leakcanary:leakcanary-android-no-op:+'
+    implementation 'com.android.support:appcompat-v7:25.3.1'
+    implementation 'com.android.support.constraint:constraint-layout:1.0.2'
+    testImplementation 'junit:junit:4.12'
+    testImplementation 'org.mockito:mockito-core:1.9.5'
+    testImplementation 'org.powermock:powermock-module-junit4:1.5.6'
+    testImplementation 'org.powermock:powermock-module-junit4-rule:1.5.6'
+    testImplementation 'org.powermock:powermock-api-mockito:1.5.6'
+    testImplementation 'org.robolectric:robolectric:3.3.2'
+    debugImplementation 'com.squareup.leakcanary:leakcanary-android:+'
+    releaseImplementation 'com.squareup.leakcanary:leakcanary-android-no-op:+'
 }
