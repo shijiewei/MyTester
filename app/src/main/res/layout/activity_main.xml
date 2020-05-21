@@ -116,6 +116,14 @@
 					android:layout_marginBottom="@dimen/btn_marginBottom"
 					android:text="@string/title_read_contact"
 					android:textSize="@dimen/btn_text_size"/>
+				<Button
+					android:id="@+id/btn_device_info"
+					android:layout_width="0dp"
+					android:layout_height="wrap_content"
+					android:layout_weight="1"
+					android:layout_marginBottom="@dimen/btn_marginBottom"
+					android:text="@string/router_label_ipv6"
+					android:textSize="@dimen/btn_text_size"/>
 			</LinearLayout>
 		</LinearLayout>
 	</ScrollView>

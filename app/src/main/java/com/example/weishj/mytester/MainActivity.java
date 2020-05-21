@@ -21,6 +21,7 @@ import com.example.weishj.mytester.fileobserver.FileWatcher;
 import com.example.weishj.mytester.handler.Sub;
 import com.example.weishj.mytester.ui.BackServiceActivity;
 import com.example.weishj.mytester.ui.CustomizedViewActivity;
+import com.example.weishj.mytester.ui.DeviceInfoActivity;
 import com.example.weishj.mytester.ui.FileMonitorActivity;
 import com.example.weishj.mytester.ui.FileShareActivity;
 import com.example.weishj.mytester.ui.MemoryLeakActivity;
@@ -58,6 +59,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
 		findViewById(R.id.btn_backservice).setOnClickListener(this);
 		findViewById(R.id.btn_file_share).setOnClickListener(this);
 		findViewById(R.id.btn_read_contact).setOnClickListener(this);
+		findViewById(R.id.btn_device_info).setOnClickListener(this);
 
 		// CMCCAESTest
 		String key = "8F39703DD5D64A6D";
@@ -93,6 +95,9 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
 			startActivity(i);
 		} else if (id == R.id.btn_read_contact) {
 			Intent i = new Intent(this, ReadContactActivity.class);
+			startActivity(i);
+		} else if (id == R.id.btn_device_info) {
+			Intent i = new Intent(this, DeviceInfoActivity.class);
 			startActivity(i);
 		}
 	}

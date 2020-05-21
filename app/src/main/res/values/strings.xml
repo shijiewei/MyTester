@@ -27,4 +27,8 @@
 	<string name="file_monitor_create_file">创建/删除文件</string>
 	<string name="file_monitor_modify_file">修改文件</string>
 	<string name="file_monitor_scan_file">扫描Android/data</string>
+
+	<!-- DeviceInfoActivity -->
+	<string name="router_label_ipv6">IPV6 地址</string>
+	<string name="router_label_validate_ipv6">真实ipv6</string>
 </resources>

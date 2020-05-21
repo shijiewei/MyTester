@@ -36,6 +36,7 @@
 		<!-- exported="true" 属性用于测试通过Intent.setComponent()方式打开其他应用的指定Activity，被打开的Activity必须设为true-->
 		<activity android:name=".ui.FileShareActivity" android:exported="true"/>
 		<activity android:name=".ui.ReadContactActivity" />
+		<activity android:name=".ui.DeviceInfoActivity" />
 
 		<!-- 标准FileProvider用法，需要指定filepaths.xml文件 -->
 		<!--<provider-->
