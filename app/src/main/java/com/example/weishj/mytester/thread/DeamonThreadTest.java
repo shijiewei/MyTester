@@ -34,7 +34,7 @@ public class DeamonThreadTest {
 		};
 
 		Thread t = new Thread(r);
-		t.setDaemon(true);  // try to set this to "false" and see what happens
+		t.setDaemon(false);  // try to set this to "false" and see what happens
 		t.start();
 
 		System.out.println("Main thread waiting...");
