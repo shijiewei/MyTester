@@ -6,6 +6,7 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
@@ -13,15 +14,20 @@ import android.widget.Toast;
 import com.example.weishj.mytester.BaseActivity;
 import com.example.weishj.mytester.R;
 import com.example.weishj.mytester.fileobserver.FileWatcher;
+import com.example.weishj.mytester.util.DateUtils;
 import com.mob.tools.MobLog;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.nio.file.Files;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -29,6 +35,7 @@ import java.util.regex.Pattern;
 public class FileMonitorActivity extends BaseActivity implements View.OnClickListener {
 	private static final String TAG = FileMonitorActivity.class.getSimpleName();
 	private static final String FILE_NAME = "test.txt";
+	private static final String DEFAULT_TIME_FORMAT = "yyyy-MM-dd HH:mm:ss.SSS";
 	private FileWatcher fileWatcher;
 	private String path;
 	private String fullPath;
@@ -58,9 +65,11 @@ public class FileMonitorActivity extends BaseActivity implements View.OnClickLis
 			createFile();
 		} else if (id == R.id.btn_file_monitor_modify) {
 			modifyFile();
+		} else if (id == R.id.btn_file_monitor_read_time) {
+			readTestFileTime();
 		} else if (id == R.id.btn_file_monitor_scan) {
 //			monitorExternalDir();
-			monitorExternalDir2();
+			scanExternalDir();
 		}
 	}
 
@@ -68,6 +77,7 @@ public class FileMonitorActivity extends BaseActivity implements View.OnClickLis
 		findViewById(R.id.btn_file_monitor_create).setOnClickListener(this);
 		findViewById(R.id.btn_file_monitor_modify).setOnClickListener(this);
 		findViewById(R.id.btn_file_monitor_scan).setOnClickListener(this);
+		findViewById(R.id.btn_file_monitor_read_time).setOnClickListener(this);
 	}
 
 	private void prepareFileMonitorTest() {
@@ -76,11 +86,11 @@ public class FileMonitorActivity extends BaseActivity implements View.OnClickLis
 		// Y 	/data/data/com.example.weishj.mytester/files/test/test.txt
 //		path = getFilesDir() + "/test/";
 		// Y	Android/data/com.example.weishj.mytester/cache/test/
-//		path = getExternalCacheDir() + "/test/";
+		path = getExternalCacheDir() + "/test/";
 		// Y	/storage/emulated/0/test/test.txt
 //		path = Environment.getExternalStorageDirectory() + "/test/";
 		// Y	/storage/emulated/0/Android/data/com.example.weishj.mytester/files/DCIM/test/test.txt
-		path = getExternalFilesDir(Environment.DIRECTORY_DCIM) + "/test/";
+//		path = getExternalFilesDir(Environment.DIRECTORY_DCIM) + "/test/";
 		fullPath = path + FILE_NAME;
 		fileWatcher = new FileWatcher(path);
 		fileWatcher.startWatching();
@@ -88,7 +98,7 @@ public class FileMonitorActivity extends BaseActivity implements View.OnClickLis
 		Log.d(FileWatcher.TAG, "path: " + path);
 		final File file = new File(path);
 		if(!file.exists()) {
-			file.mkdir();
+			file.mkdirs();
 		}
 	}
 
@@ -121,27 +131,38 @@ public class FileMonitorActivity extends BaseActivity implements View.OnClickLis
 				//如果文件已存在，那么就在文件末尾追加写入
 				fos = new FileOutputStream(file,true);//这里构造方法多了一个参数true,表示在文件末尾追加写入
 			}
+
+			Log.d(FileWatcher.TAG, "updateBefore: " + DateUtils.getDefaultTime(file.lastModified()) + ", file: " + fullPath);
+			file.setLastModified(System.currentTimeMillis() + 1000000);
+			Log.d(FileWatcher.TAG, "updateAfter0: " + DateUtils.getDefaultTime(file.lastModified()) + ", file: " + fullPath);
+
 			OutputStreamWriter osw = new OutputStreamWriter(fos, "UTF-8");//指定以UTF-8格式写入文件
 			index ++;
 			osw.write(index + "\r\n");
 			//写入完成关闭流
 			osw.close();
 
-			long update = file.lastModified();
+			Log.d(FileWatcher.TAG, "updateAfter1: " + DateUtils.getDefaultTime(file.lastModified()) + ", file: " + fullPath);
+			file.setLastModified(System.currentTimeMillis() + 1000000);
+			Log.d(FileWatcher.TAG, "updateAfter2: " + DateUtils.getDefaultTime(file.lastModified()) + ", file: " + fullPath);
+
 			String parentPath = "/storage/emulated/0/Android/data/com.example.weishj.mytester/";
 			File file1 = new File(parentPath);
-			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-				BasicFileAttributes attributes = Files.readAttributes(file1.toPath(), BasicFileAttributes.class);
-				Log.d(FileWatcher.TAG, "Files.getLastModifiedTime: " + Files.getLastModifiedTime(file1.toPath()) + ", file: " + parentPath);
-				Log.d(FileWatcher.TAG, "attributes.createTime: " + attributes.creationTime().toString() + ", file: " + parentPath);
-				Log.d(FileWatcher.TAG, "attributes.modifyTime: " + attributes.lastModifiedTime().toString() + ", file: " + parentPath);
-				Log.d(FileWatcher.TAG, "attributes.accessTime: " + attributes.lastAccessTime().toString() + ", file: " + parentPath);
-				Log.d(FileWatcher.TAG, "attributes.size: " + attributes.size() + ", file: " + parentPath);
+			try {
+				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+					BasicFileAttributes attributes = Files.readAttributes(file1.toPath(), BasicFileAttributes.class);
+					Log.d(FileWatcher.TAG, "Files.getLastModifiedTime: " + Files.getLastModifiedTime(file1.toPath()) + ", file: " + parentPath);
+					Log.d(FileWatcher.TAG, "attributes.createTime: " + attributes.creationTime().toString() + ", file: " + parentPath);
+					Log.d(FileWatcher.TAG, "attributes.modifyTime: " + attributes.lastModifiedTime().toString() + ", file: " + parentPath);
+					Log.d(FileWatcher.TAG, "attributes.accessTime: " + attributes.lastAccessTime().toString() + ", file: " + parentPath);
+					Log.d(FileWatcher.TAG, "attributes.size: " + attributes.size() + ", file: " + parentPath);
+				}
+			} catch (Throwable t) {
+				Log.e(FileWatcher.TAG, t.getMessage(), t);
 			}
 			if (file1 != null && file1.exists()) {
 				Log.d(FileWatcher.TAG, "update: " + file1.lastModified() + ", file: " + parentPath);
 			}
-			Log.d(FileWatcher.TAG, "update: " + update + ", file: " + fullPath);
 			Toast.makeText(this, "Appended: " + index, Toast.LENGTH_SHORT).show();
 		}catch (Exception e) {
 			e.printStackTrace();
@@ -178,7 +199,7 @@ public class FileMonitorActivity extends BaseActivity implements View.OnClickLis
 		}
 	}
 
-	private void monitorExternalDir2() {
+	private void scanExternalDir() {
 		// "/storage/emulated/0/Android/data/"
 		String externalPath = Environment.getExternalStorageDirectory() + "/Android/data/";
 		File exPath = new File(externalPath);
@@ -290,4 +311,101 @@ public class FileMonitorActivity extends BaseActivity implements View.OnClickLis
 		return isSystemApp;
 	}
 
+	private void readTestFileTime() {
+		String line = null;
+		BufferedReader br = null;
+		try {
+			String path = Environment.getExternalStorageDirectory() + "/Android/data/";
+//			String path = fullPath;
+			/**
+			 * $ ls -llcp /sdcard/Android/data/com.example.mytester/cache
+			 * total 4
+			 * -rw-rw---- 1 u0_a2058 sdcard_rw    0 2020-08-20 14:42:18.003563924 +0800 sdg.txt
+			 * drwxrwx--x 2 u0_a2058 sdcard_rw 4096 2020-08-20 15:27:57.773562878 +0800 test/
+			 */
+			Process p = Runtime.getRuntime().exec("ls -llcp " + path);
+//			Process p = Runtime.getRuntime().exec("stat " + "/sdcard/Android/data/com.android.browser");
+			InputStreamReader isr = new InputStreamReader(p.getInputStream());
+			br = new BufferedReader(isr);
+			while ((line = br.readLine()) != null) {
+//				Log.i(FileWatcher.TAG, "shell: " + line);
+				if (!TextUtils.isEmpty(line)) {
+					// 不能简单使用" "分割，line中有可能得到多个连续空格，导致数组中包含多个空字符串，结果出错
+					String[] arr = line.split("[ ]+");
+					int len = 0;
+					// 过滤掉第一行的"total 4"
+					if (arr != null && (len = arr.length) > 2) {
+						String file = findFileName(arr);
+						// 不能从后往前找，有些文件名带有空格，会导致找错
+//						String ctimeNano = arr[len - 4] + " " + arr[len - 3];
+						String ctimeNano = arr[5] + " " + arr[6];
+						long ctimeMillis = nano2Millis(ctimeNano);
+						Log.i(FileWatcher.TAG, "file: " + file + ", ctimeNano: " + ctimeNano + ", ctimeMillis: " + ctimeMillis
+								+ ", ctimeMillisF: " + formatTimestamp(ctimeMillis));
+					}
+				}
+			}
+		} catch (Throwable t) {
+			Log.e(FileWatcher.TAG, t.getMessage(), t);
+		} finally {
+			if (br != null) {
+				try {
+					br.close();
+				} catch (Throwable tt) {}
+			}
+		}
+	}
+
+	private long nano2Millis(String nano) {
+		long millis = 0;
+		if (!TextUtils.isEmpty(nano)) {
+			try {
+				String millisStr = nano.substring(0, nano.length() - 6);
+				Log.i(FileWatcher.TAG, "millisStr: " + millisStr);
+				millis = parse2Timestamp(millisStr);
+			} catch (Throwable t) {
+				t.printStackTrace();
+			}
+		}
+		return millis;
+	}
+
+	private long parse2Timestamp(String dateTime) {
+		long time = 0;
+		try {
+			DateFormat df = new SimpleDateFormat(DEFAULT_TIME_FORMAT);
+			Date date = df.parse(dateTime);
+			time = date.getTime();
+		} catch (Throwable t) {
+			t.printStackTrace();
+		}
+		return time;
+	}
+
+	private String formatTimestamp(long timestamp) {
+		String dateTime = "";
+		try {
+			DateFormat df = new SimpleDateFormat(DEFAULT_TIME_FORMAT);
+			Date date = new Date(timestamp);
+			dateTime = df.format(date);
+		} catch (Throwable t) {
+			t.printStackTrace();
+		}
+		return dateTime;
+	}
+
+	private String findFileName(String[] arr) {
+		String fileName = "";
+		int len = 0;
+		if (arr != null && (len = arr.length) >= 9) {
+			try {
+				for (int start = 8; start < len; start++) {
+					fileName += arr[start];
+				}
+			} catch (Throwable t) {
+				MobLog.getInstance().d(t);
+			}
+		}
+		return fileName;
+	}
 }

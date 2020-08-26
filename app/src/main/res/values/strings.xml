@@ -27,6 +27,7 @@
 	<string name="file_monitor_create_file">创建/删除文件</string>
 	<string name="file_monitor_modify_file">修改文件</string>
 	<string name="file_monitor_scan_file">扫描Android/data</string>
+	<string name="file_monitor_read_time">读取测试文件时间</string>
 
 	<!-- DeviceInfoActivity -->
 	<string name="router_label_ipv6">IPV6 地址</string>
