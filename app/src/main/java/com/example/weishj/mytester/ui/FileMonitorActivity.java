@@ -19,8 +19,11 @@ import com.mob.tools.MobLog;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.nio.file.Files;
@@ -66,7 +69,8 @@ public class FileMonitorActivity extends BaseActivity implements View.OnClickLis
 		} else if (id == R.id.btn_file_monitor_modify) {
 			modifyFile();
 		} else if (id == R.id.btn_file_monitor_read_time) {
-			readTestFileTime();
+//			readTestFileTime();
+			readTestFile();
 		} else if (id == R.id.btn_file_monitor_scan) {
 //			monitorExternalDir();
 			scanExternalDir();
@@ -86,9 +90,9 @@ public class FileMonitorActivity extends BaseActivity implements View.OnClickLis
 		// Y 	/data/data/com.example.weishj.mytester/files/test/test.txt
 //		path = getFilesDir() + "/test/";
 		// Y	Android/data/com.example.weishj.mytester/cache/test/
-		path = getExternalCacheDir() + "/test/";
+//		path = getExternalCacheDir() + "/test/";
 		// Y	/storage/emulated/0/test/test.txt
-//		path = Environment.getExternalStorageDirectory() + "/test/";
+		path = Environment.getExternalStorageDirectory() + "/test/";
 		// Y	/storage/emulated/0/Android/data/com.example.weishj.mytester/files/DCIM/test/test.txt
 //		path = getExternalFilesDir(Environment.DIRECTORY_DCIM) + "/test/";
 		fullPath = path + FILE_NAME;
@@ -107,16 +111,18 @@ public class FileMonitorActivity extends BaseActivity implements View.OnClickLis
 		File newFile = new File(fullPath);
 		if (!newFile.exists()) {
 			try {
-				Log.d(FileWatcher.TAG, "create file: " + fullPath);
-				Toast.makeText(this, "Created", Toast.LENGTH_SHORT).show();
 				newFile.createNewFile();
+				Log.d(FileWatcher.TAG, "create file: " + fullPath);
+				Toast.makeText(this, "Created: " + fullPath, Toast.LENGTH_SHORT).show();
 			} catch (IOException e) {
-				e.printStackTrace();
+				String msg = "Create file error: " + fullPath;
+				Log.e(FileWatcher.TAG, msg, e);
+				Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
 			}
 		} else {
-			Log.d(FileWatcher.TAG, "delete file: " + fullPath);
-			Toast.makeText(this, "Deleted", Toast.LENGTH_SHORT).show();
 			newFile.delete();
+			Log.d(FileWatcher.TAG, "delete file: " + fullPath);
+			Toast.makeText(this, "Deleted: " + fullPath, Toast.LENGTH_SHORT).show();
 		}
 	}
 
@@ -353,6 +359,22 @@ public class FileMonitorActivity extends BaseActivity implements View.OnClickLis
 					br.close();
 				} catch (Throwable tt) {}
 			}
+		}
+	}
+
+	private void readTestFile() {
+		File file = new File(fullPath);
+		try {
+			Log.d(FileWatcher.TAG, "read test file: " + fullPath);
+			InputStream fis = new FileInputStream(file);
+			InputStreamReader isr = new InputStreamReader(fis);
+			BufferedReader br = new BufferedReader(isr);
+			String line;
+			while ((line = br.readLine()) != null) {
+				Log.d(FileWatcher.TAG, "get test file content: " + line);
+			}
+		} catch (Throwable e) {
+			Log.d(FileWatcher.TAG, "get test file content error", e);
 		}
 	}
 
