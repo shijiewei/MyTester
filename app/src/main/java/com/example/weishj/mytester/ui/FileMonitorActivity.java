@@ -69,8 +69,8 @@ public class FileMonitorActivity extends BaseActivity implements View.OnClickLis
 		} else if (id == R.id.btn_file_monitor_modify) {
 			modifyFile();
 		} else if (id == R.id.btn_file_monitor_read_time) {
-//			readTestFileTime();
-			readTestFile();
+			readTestFileTime();
+//			readTestFile();
 		} else if (id == R.id.btn_file_monitor_scan) {
 //			monitorExternalDir();
 			scanExternalDir();
@@ -90,9 +90,9 @@ public class FileMonitorActivity extends BaseActivity implements View.OnClickLis
 		// Y 	/data/data/com.example.weishj.mytester/files/test/test.txt
 //		path = getFilesDir() + "/test/";
 		// Y	Android/data/com.example.weishj.mytester/cache/test/
-//		path = getExternalCacheDir() + "/test/";
+		path = getExternalCacheDir() + "/test/";
 		// Y	/storage/emulated/0/test/test.txt
-		path = Environment.getExternalStorageDirectory() + "/test/";
+//		path = Environment.getExternalStorageDirectory() + "/test/";
 		// Y	/storage/emulated/0/Android/data/com.example.weishj.mytester/files/DCIM/test/test.txt
 //		path = getExternalFilesDir(Environment.DIRECTORY_DCIM) + "/test/";
 		fullPath = path + FILE_NAME;
@@ -321,15 +321,15 @@ public class FileMonitorActivity extends BaseActivity implements View.OnClickLis
 		String line = null;
 		BufferedReader br = null;
 		try {
-			String path = Environment.getExternalStorageDirectory() + "/Android/data/";
-//			String path = fullPath;
+//			String path = Environment.getExternalStorageDirectory() + "/Android/data/";
+			String path = fullPath;
 			/**
 			 * $ ls -llcp /sdcard/Android/data/com.example.mytester/cache
 			 * total 4
 			 * -rw-rw---- 1 u0_a2058 sdcard_rw    0 2020-08-20 14:42:18.003563924 +0800 sdg.txt
 			 * drwxrwx--x 2 u0_a2058 sdcard_rw 4096 2020-08-20 15:27:57.773562878 +0800 test/
 			 */
-			Process p = Runtime.getRuntime().exec("ls -llcp " + path);
+			Process p = Runtime.getRuntime().exec("ls -l " + path);
 //			Process p = Runtime.getRuntime().exec("stat " + "/sdcard/Android/data/com.android.browser");
 			InputStreamReader isr = new InputStreamReader(p.getInputStream());
 			br = new BufferedReader(isr);
@@ -341,6 +341,8 @@ public class FileMonitorActivity extends BaseActivity implements View.OnClickLis
 					int len = 0;
 					// 过滤掉第一行的"total 4"
 					if (arr != null && (len = arr.length) > 2) {
+						String ctimeMinutes = findTime(line);
+						Log.i(FileWatcher.TAG, "ctimeMinutes: " + ctimeMinutes);
 						String file = findFileName(arr);
 						// 不能从后往前找，有些文件名带有空格，会导致找错
 //						String ctimeNano = arr[len - 4] + " " + arr[len - 3];
@@ -429,5 +431,23 @@ public class FileMonitorActivity extends BaseActivity implements View.OnClickLis
 			}
 		}
 		return fileName;
+	}
+
+	private String findTime(String str) {
+		String time = null;
+		try {
+			// drwxrwx--- 3 u0_a31  everybody 3488 2020-08-31 11:25 cn.sharesdk.demo/
+			Pattern p = Pattern.compile("\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}");
+			Matcher m = p.matcher(str);
+			if (m.find()) {
+				time = m.group(0);
+				int start = m.start();
+				int end = m.end();
+				Log.i(FileWatcher.TAG, "start: " + start + ", end: " + end + ", fileName: " + str.substring(end + 1));
+			}
+		} catch (Throwable t) {
+			t.printStackTrace();
+		}
+		return time;
 	}
 }
