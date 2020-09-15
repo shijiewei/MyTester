@@ -157,6 +157,19 @@
 					android:textSize="14sp"
 					android:text="删除CR文件(自己的/别人的)"/>
 			</LinearLayout>
+			<LinearLayout
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:layout_marginBottom="10dp"
+				android:orientation="horizontal">
+				<Button
+					android:id="@+id/page_test_create_video_by_content_resolver_btn"
+					android:layout_width="0dp"
+					android:layout_height="wrap_content"
+					android:layout_weight="1"
+					android:textSize="14sp"
+					android:text="CR创建视频"/>
+			</LinearLayout>
 			<View
 				android:layout_width="match_parent"
 				android:layout_height="1dp"

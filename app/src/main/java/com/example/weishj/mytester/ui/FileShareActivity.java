@@ -158,6 +158,7 @@ public class FileShareActivity extends BaseActivity {
 		findViewById(R.id.page_test_create_file_by_content_resolver_btn).setOnClickListener(this);
 		findViewById(R.id.page_test_read_file_by_content_resolver_btn).setOnClickListener(this);
 		findViewById(R.id.page_test_delete_file_by_content_resolver_btn).setOnClickListener(this);
+		findViewById(R.id.page_test_create_video_by_content_resolver_btn).setOnClickListener(this);
 		/** ==============SAF访问指定文件================= */
 		findViewById(R.id.page_test_create_file_by_saf_btn).setOnClickListener(this);
 		findViewById(R.id.page_test_read_file_by_saf_btn).setOnClickListener(this);
@@ -194,7 +195,7 @@ public class FileShareActivity extends BaseActivity {
 		} else if (id == R.id.page_test_read_file_by_file_private_btn) {
 			readFileByFileAPI(TEST_PATH_UNDER_PRIVATE_DIR, TEST_NAME);
 		} else if (id == R.id.page_test_create_file_by_media_btn) {
-			mediaCreatedFileName = createFileByMedia(TEST_ASSET_IMG, TEST_CREATED_IMG_NAME,
+			mediaCreatedFileName = createImageByMedia(TEST_ASSET_IMG, TEST_CREATED_IMG_NAME,
 					"test img save use media");
 		} else if (id == R.id.page_test_read_file_by_media_btn) {
 			String file = TextUtils.isEmpty(mediaCreatedFileName) ? TEST_CREATED_IMG_NAME : mediaCreatedFileName;
@@ -213,6 +214,9 @@ public class FileShareActivity extends BaseActivity {
 			// 删除ContentResolver创建的文件
 			deleteOthersFile(this, REQUEST_DELETE_OTHERS_FILE_CONTENT_RESOLVER,
 					TEST_CREATED_FILE_NAME + ".jpg");
+		} else if (id == R.id.page_test_create_video_by_content_resolver_btn) {
+			createFileByContentResolver(this, "video/mp4",
+					"video_from_asset", "test video save use insert");
 		} else if (id == R.id.page_test_create_file_by_saf_btn) {
 			createFileBySAF("text/plain", TEST_CREATED_FILE_SAF);
 		} else if (id == R.id.page_test_read_file_by_saf_btn) {
@@ -474,7 +478,7 @@ public class FileShareActivity extends BaseActivity {
 	 * @param desc 文件描述
 	 * @return 创建的文件名
 	 */
-	private String createFileByMedia(String originImg, String displayName, String desc) {
+	private String createImageByMedia(String originImg, String displayName, String desc) {
 		String fileName = "";
 		try {
 			// 字符串的InputStream无法通过decodeStream转换成Bitmap
@@ -534,7 +538,7 @@ public class FileShareActivity extends BaseActivity {
 	}
 
 	/**
-	 * ContentResolver创建创建图片（在/sdcard/Pictures/下）
+	 * ContentResolver创建文件（图片/视频）
 	 *
 	 * @param context
 	 * @param mimeType
@@ -549,14 +553,31 @@ public class FileShareActivity extends BaseActivity {
 		try {
 			/** 向系统媒体库插入媒体文件元数据，并获取对应的uri */
 			ContentValues values = new ContentValues();
-			/*
-			 * name="" 或 name=null，系统自动加上时间戳（157424667424.jpg）
-			 * name=.no，系统自动加上下划线（_.n.jpg）
-			 */
-			values.put(MediaStore.Images.Media.DISPLAY_NAME, name);
-			values.put(MediaStore.Images.Media.DESCRIPTION, description);
-			values.put(MediaStore.Images.Media.MIME_TYPE, mimeType);
-			uri = cr.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+			if (mimeType != null && mimeType.startsWith("video")) {
+				/*
+				 * name="" 或 name=null，系统自动加上时间戳（157424667424.jpg）
+				 * name=.no，系统自动加上下划线（_.n.jpg）
+				 */
+				values.put(MediaStore.Video.Media.DISPLAY_NAME, name);
+				values.put(MediaStore.Video.Media.DESCRIPTION, description);
+				values.put(MediaStore.Video.Media.MIME_TYPE, mimeType);
+				uri = cr.insert(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, values);
+			} else if (mimeType != null && mimeType.startsWith("image")) {
+				/*
+				 * name="" 或 name=null，系统自动加上时间戳（157424667424.jpg）
+				 * name=.no，系统自动加上下划线（_.n.jpg）
+				 */
+				values.put(MediaStore.Images.Media.DISPLAY_NAME, name);
+				values.put(MediaStore.Images.Media.DESCRIPTION, description);
+				values.put(MediaStore.Images.Media.MIME_TYPE, mimeType);
+				uri = cr.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+			} else {
+				// 其他类型可以做扩展，此处默认都按照图片处理了
+				values.put(MediaStore.Images.Media.DISPLAY_NAME, name);
+				values.put(MediaStore.Images.Media.DESCRIPTION, description);
+				values.put(MediaStore.Images.Media.MIME_TYPE, mimeType);
+				uri = cr.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+			}
 			if (uri == null) {
 				return null;
 			}
@@ -566,24 +587,36 @@ public class FileShareActivity extends BaseActivity {
 			ParcelFileDescriptor parcelFileDescriptor = cr.openFileDescriptor(uri, "w");
 			FileOutputStream fileOutputStream =
 					new FileOutputStream(parcelFileDescriptor.getFileDescriptor());
-			// 读取asset下的图片，写入文件中
-//			InputStream inputStream = context.getResources().getAssets().open(saveFileName);
-//
-//			while (true) {
-//				int numRead = inputStream.read(buffer);
-//				if (numRead == -1) {
-//					break;
-//				}
-//				fileOutputStream.write(buffer, 0, numRead);
-//			}
-			OutputStreamWriter osw = new OutputStreamWriter(fileOutputStream, "utf-8");
-			osw.write(TEST_CONTENT);
-			osw.write(" ");
-			osw.write(DateUtils.getDefaultTime(System.currentTimeMillis()));
-			osw.write("\n");
+
+			// 读取asset下的图片/视频，写入文件中
+			String testFileName;
+			if (mimeType != null && mimeType.startsWith("video")) {
+				testFileName = "testVideo.mp4";
+			} else if (mimeType != null && mimeType.startsWith("image")) {
+				testFileName = "testImg.jpg";
+			} else {
+				testFileName = "testImg.jpg";
+			}
+			InputStream inputStream = context.getResources().getAssets().open(testFileName);
+			while (true) {
+				int numRead = inputStream.read(buffer);
+				if (numRead == -1) {
+					break;
+				}
+				fileOutputStream.write(buffer, 0, numRead);
+			}
 			fileOutputStream.flush();
-			osw.flush();
-			osw.close();
+			fileOutputStream.close();
+
+			// 甚至也可以直接向jpg/mp4文件中写入任意字符串，只不过该jpg无法当做图片浏览
+//			OutputStreamWriter osw = new OutputStreamWriter(fileOutputStream, "utf-8");
+//			osw.write(TEST_CONTENT);
+//			osw.write(" ");
+//			osw.write(DateUtils.getDefaultTime(System.currentTimeMillis()));
+//			osw.write("\n");
+//			fileOutputStream.flush();
+//			osw.flush();
+//			osw.close();
 		} catch (Exception e) {
 			log("Failed to insert media file.\n" + e.getMessage());
 			e.printStackTrace();
