@@ -6,7 +6,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 /**
  * 同步安全测试
  *
- * 演示ReentrantReadWriteLock实现同步，它的特点是"读并发"、"写互斥"、"读写互斥"
+ * 演示ReentrantReadWriteLock实现同步，它的特点是"读读并发"、"写写互斥"、"读写互斥"
  */
 public class ReentrantReadWriteLockTest1 {
 	private static final int THREADS_COUNT = 3;	// 线程数
@@ -17,7 +17,7 @@ public class ReentrantReadWriteLockTest1 {
 
 	static {
 		// 为了通过一个示例同时演示"读并发"、"写互斥"、"读写互斥"的效果，创建一个公平锁
-		lock = new ReentrantReadWriteLock(false);	// 此处也说明读锁与写锁之间同样遵守公平性原则
+		lock = new ReentrantReadWriteLock(true);	// 此处也说明读锁与写锁之间同样遵守公平性原则
 	}
 
 	public void buyTicket() {
