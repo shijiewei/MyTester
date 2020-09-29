@@ -53,6 +53,11 @@ import java.util.List;
  * 1. 由于是测试应用间的文件共享，为了少写代码，采用同一个工程，编译不同包名的apk进行测试。请将该项目分别编译以下两个applicationId的apk：
  *		（1）com.example.mytester
  *		（2）com.example.fake
+ * 2.该类中包含了各种文件操作的方法，包括适配Android Q的方法
+ * 3.为文件生成uri、通过uri读取文件，都是可行的。
+ * （1）prepareShareByFileProvider()中提供了"为文件生成uri"的方法"CustomizedFileProvider.getUriForFile()",
+ * （2）"CustomizedFileProvider.PathStrategy.getFileForUri(Uri uri)"则演示了如何通过uri获取文件。
+ *
  */
 public class FileShareActivity extends BaseActivity {
 	private static final String TAG = "FileShareActivity";
