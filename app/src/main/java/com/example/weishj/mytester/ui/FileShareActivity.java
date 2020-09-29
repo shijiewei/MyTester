@@ -359,13 +359,15 @@ public class FileShareActivity extends BaseActivity {
 				if (data != null) {
 					if (Build.VERSION.SDK_INT >= 19) {
 						Uri uri = data.getData();
-						// 保留该Uri的永久权限
-						getContentResolver().takePersistableUriPermission(uri,
-								Intent.FLAG_GRANT_READ_URI_PERMISSION |
-										Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+						if (uri != null) {
+							// 保留该Uri的永久权限
+							getContentResolver().takePersistableUriPermission(uri,
+									Intent.FLAG_GRANT_READ_URI_PERMISSION |
+											Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
 
-						String path = UriUtils.getPathOfExternalStorageFromGrantedUri(uri);
-						log("Granted. \nDir: " + path);
+							String path = UriUtils.getPathOfExternalStorageFromGrantedUri(uri);
+							log("Granted. \nDir: " + path);
+						}
 					}
 				}
 			} else if (resultCode == RESULT_CANCELED) {
@@ -440,8 +442,8 @@ public class FileShareActivity extends BaseActivity {
 	/**
 	 * File API 读取文件
 	 *
-	 * @param path
-	 * @param name
+	 * @param path 路径
+	 * @param name 文件名
 	 */
 	private void readFileByFileAPI(String path, String name) {
 		File file = new File(path, name);
@@ -540,11 +542,11 @@ public class FileShareActivity extends BaseActivity {
 	/**
 	 * ContentResolver创建文件（图片/视频）
 	 *
-	 * @param context
-	 * @param mimeType
+	 * @param context context
+	 * @param mimeType 媒体类型
 	 * @param name 插入时，文件名不用带后缀，系统会根据mimetype自动加上后缀
-	 * @param description
-	 * @return
+	 * @param description 文件描述
+	 * @return 生成的文件名
 	 */
 	private String createFileByContentResolver(Context context, String mimeType,
 											   String name, String description) {
@@ -638,7 +640,7 @@ public class FileShareActivity extends BaseActivity {
 	/**
 	 * 查看/sdcard/Pictures/下的图片文件
 	 *
-	 * @param context
+	 * @param context context
 	 * @param name 查找时，文件名应该是带有后缀的全称，否则找不到文件
 	 */
 	private void readFileByContentResolver(Context context, Uri searchFrom, String name) {
@@ -690,8 +692,8 @@ public class FileShareActivity extends BaseActivity {
 	 *
 	 * 注意：若删除其他应用创建的媒体文件，需要READ_EXTERNAL_STORAGE权限
 	 *
-	 * @param context
-	 * @param requestCode
+	 * @param context context
+	 * @param requestCode resquestCode
 	 * @param name 查找时，文件名应该是带有后缀的全称，否则找不到文件
 	 */
 	private void deleteOthersFile(Context context, int requestCode, String name) {
@@ -771,8 +773,8 @@ public class FileShareActivity extends BaseActivity {
 	 * // createFile("text/plain", "foobar.txt");
 	 * // createFile("image/png", "mypicture.png");
 	 *
-	 * @param mimeType
-	 * @param fileName
+	 * @param mimeType 媒体类型
+	 * @param fileName 文件名
 	 */
 	private void createFileBySAF(String mimeType, String fileName) {
 		Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
@@ -790,7 +792,7 @@ public class FileShareActivity extends BaseActivity {
 	/**
 	 * SAF读取文件
 	 * 
-	 * @param name
+	 * @param name 文件名
 	 */
 	private void readFileBySAF(String name) {
 		/**
@@ -834,9 +836,9 @@ public class FileShareActivity extends BaseActivity {
 	/**
 	 * 通过uri写文件（覆盖）
 	 * 
-	 * @param content
-	 * @param uri
-	 * @return
+	 * @param content 待写入内容
+	 * @param uri 文件uri
+	 * @return 文件名
 	 */
 	private String writeStringIntoURI(String content, Uri uri) {
 		String displayName = "";
@@ -866,9 +868,9 @@ public class FileShareActivity extends BaseActivity {
 	/**
 	 * 通过uri读取文件内容
 	 * 
-	 * @param context
-	 * @param uri
-	 * @return
+	 * @param context context
+	 * @param uri 文件uri
+	 * @return 文件内容
 	 */
 	private String readStringFromURI(Context context, Uri uri) {
 		try {
@@ -898,9 +900,9 @@ public class FileShareActivity extends BaseActivity {
 	/**
 	 * 通过uri写文件（追加）
 	 * 
-	 * @param context
-	 * @param content
-	 * @param uri
+	 * @param context context
+	 * @param content 待写入内容
+	 * @param uri 目标uri
 	 * @return
 	 */
 	private String appendStringIntoUri(Context context, String content, Uri uri) {
@@ -911,8 +913,8 @@ public class FileShareActivity extends BaseActivity {
 	/**
 	 * 申请指定目录的完整访问权限（管理文件组）
 	 *
-	 * @param context
-	 * @param path
+	 * @param context context
+	 * @param path 目录
 	 */
 	private void applyDirPermission(Context context, String path) {
 		if (Build.VERSION.SDK_INT >= 19) {
@@ -933,8 +935,8 @@ public class FileShareActivity extends BaseActivity {
 	/**
 	 * 通过指定目录的uri，在其下写文件
 	 *
-	 * @param context
-	 * @param uri
+	 * @param context context
+	 * @param uri 目录uri
 	 */
 	private void createFileUnderDir(Context context, Uri uri) {
 		if (Build.VERSION.SDK_INT >= 19) {
@@ -968,7 +970,7 @@ public class FileShareActivity extends BaseActivity {
 	/**
 	 * 通过获取到的sdcard根目录uri，在指定的subPath下创建文件
 	 *
-	 * @param context
+	 * @param context context
 	 * @param uri 根目录uri
 	 * @param subPath 想要创建在哪个子目录下
 	 */
@@ -1013,7 +1015,7 @@ public class FileShareActivity extends BaseActivity {
 	/**
 	 * 通过获取到的sdcard根目录uri，读取指定的subPath下的文件内容
 	 *
-	 * @param context
+	 * @param context context
 	 * @param uri 根目录uri
 	 * @param rootRelativePath 相对于root的路径（包含文件名）
 	 */
@@ -1048,8 +1050,8 @@ public class FileShareActivity extends BaseActivity {
 	/**
 	 * 通过路径uri撤销对该路径的授权
 	 *
-	 * @param context
-	 * @param uri
+	 * @param context context
+	 * @param uri 路径uri
 	 */
 	private void releaseDirPermission(Context context, Uri uri) {
 		if (Build.VERSION.SDK_INT >= 19) {
@@ -1061,9 +1063,9 @@ public class FileShareActivity extends BaseActivity {
 	}
 
 	/**
-	 * 向指定Uri授予林是访问权限（用于FileProvider共享文件）
+	 * 向指定Uri授予临时访问权限（用于FileProvider共享文件）
 	 *
-	 * @param uri
+	 * @param uri uri
 	 */
 	private void grantPermissionForFileProvider(Uri uri) {
 		if (sharableUri != null) {
@@ -1088,7 +1090,7 @@ public class FileShareActivity extends BaseActivity {
 	/**
 	 * 撤销指定Uri的权限（用于FileProvider共享文件）
 	 *
-	 * @param uri
+	 * @param uri uri
 	 */
 	private void releasePermissionOfFileProvider(Uri uri) {
 		this.revokeUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
@@ -1098,7 +1100,7 @@ public class FileShareActivity extends BaseActivity {
 	/**
 	 * 本地硬编码其他应用共享的文件Uri，然后跨应用读取（用于FileProvider共享文件）
 	 *
-	 * @param uriStr
+	 * @param uriStr uriStr
 	 */
 	private void readFileByFileProvider(String uriStr) {
 		try {
@@ -1120,7 +1122,7 @@ public class FileShareActivity extends BaseActivity {
 	/**
 	 * 编辑通过FileProvider共享的文件（用于FileProvider共享文件）
 	 *
-	 * @param uriStr
+	 * @param uriStr uriStr
 	 */
 	private void editFileByFileProvider(String uriStr) {
 		final Uri uri = Uri.parse(uriStr);
@@ -1214,7 +1216,7 @@ public class FileShareActivity extends BaseActivity {
 	/**
 	 * 这只是一个测试方法，用于测试使用ContentResolver读取/Downloads文件夹，结果是无法读取
 	 *
-	 * @param name
+	 * @param name 文件名
 	 */
 	private void readDownloadsByContentResolver(String name) {
 		if (TextUtils.isEmpty(name)) {
@@ -1277,8 +1279,8 @@ public class FileShareActivity extends BaseActivity {
 	/**
 	 * 检查文档元数据
 	 *
-	 * @param uri
-	 * @return displayName
+	 * @param uri uri
+	 * @return displayName 文件名
 	 */
 	private String getFileNameFromUri(Uri uri) {
 		String displayName = null;
@@ -1325,7 +1327,7 @@ public class FileShareActivity extends BaseActivity {
 	/**
 	 * 获取应用的所有已授权Uri（用于管理文件组）
 	 *
-	 * @param context
+	 * @param context context
 	 * @return
 	 */
 	private List<Uri> getPermittedUri(Context context) {
@@ -1342,9 +1344,9 @@ public class FileShareActivity extends BaseActivity {
 	/**
 	 * 检查给定的目录是否具备访问权限（用于管理文件组）
 	 *
-	 * @param context
-	 * @param root
-	 * @return
+	 * @param context context
+	 * @param root 跟路径
+	 * @return uri
 	 */
 	private Uri checkDirPermission(Context context, String root) {
 		Uri tmpUri = null;
