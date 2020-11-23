@@ -49,6 +49,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
 
 		checkPermissions();
 //		testHandler();
+		tempTestHere();
 
 		findViewById(R.id.btn_handler).setOnClickListener(this);
 		findViewById(R.id.btn_memory_leak).setOnClickListener(this);
@@ -129,5 +130,12 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
 				t.printStackTrace();
 			}
 		}
+	}
+
+	/**
+	 * 临时测试的代码可以放在这里
+	 */
+	private void tempTestHere() {
+
 	}
 }
