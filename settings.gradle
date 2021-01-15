@@ -1,1 +1,6 @@
 include ':app', ':MyCloudProvider'
+
+//include ':MobCommons'
+//project(':MobCommons').projectDir = new File('/Users/jackie/Documents/docs/work/yoodocs/mobcommon/issues/210115-cdata/MobCommons-2018.1011.1129')
+//include ':MobTools'
+//project(':MobTools').projectDir = new File('/Users/jackie/Documents/docs/work/yoodocs/mobcommon/issues/210115-cdata/MobTools-2018.1009.1056')
