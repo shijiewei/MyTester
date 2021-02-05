@@ -29,6 +29,7 @@
 				<category android:name="android.intent.category.LAUNCHER"/>
 			</intent-filter>
 		</activity>
+		<activity android:name=".ui.OtherTestActivity"/>
 		<activity android:name=".ui.MemoryLeakActivity"/>
 		<activity android:name=".ui.RouterActivity"/>
 		<activity android:name=".ui.WlanActivity"/>

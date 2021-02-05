@@ -12,6 +12,7 @@
 	<string name="title_back_service">后台服务列表</string>
 	<string name="title_file_share">文件共享</string>
 	<string name="title_read_contact">读取联系人</string>
+	<string name="title_other_test">其他测试</string>
 
 	<!-- RouterActivity -->
 	<string name="router_label_ip">IP 地址</string>

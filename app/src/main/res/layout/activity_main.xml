@@ -25,6 +25,19 @@
 				android:layout_height="wrap_content"
 				android:orientation="horizontal">
 				<Button
+					android:id="@+id/btn_other_test"
+					android:layout_width="0dp"
+					android:layout_height="wrap_content"
+					android:layout_weight="1"
+					android:layout_marginBottom="@dimen/btn_marginBottom"
+					android:text="@string/title_other_test"
+					android:textSize="@dimen/btn_text_size"/>
+			</LinearLayout>
+			<LinearLayout
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:orientation="horizontal">
+				<Button
 					android:id="@+id/btn_handler"
 					android:layout_width="0dp"
 					android:layout_height="wrap_content"

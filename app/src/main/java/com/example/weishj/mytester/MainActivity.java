@@ -25,6 +25,7 @@ import com.example.weishj.mytester.ui.DeviceInfoActivity;
 import com.example.weishj.mytester.ui.FileMonitorActivity;
 import com.example.weishj.mytester.ui.FileShareActivity;
 import com.example.weishj.mytester.ui.MemoryLeakActivity;
+import com.example.weishj.mytester.ui.OtherTestActivity;
 import com.example.weishj.mytester.ui.ReadContactActivity;
 import com.example.weishj.mytester.ui.RouterActivity;
 import com.example.weishj.mytester.ui.WlanActivity;
@@ -51,6 +52,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
 //		testHandler();
 		tempTestHere();
 
+		findViewById(R.id.btn_other_test).setOnClickListener(this);
 		findViewById(R.id.btn_handler).setOnClickListener(this);
 		findViewById(R.id.btn_memory_leak).setOnClickListener(this);
 		findViewById(R.id.btn_router).setOnClickListener(this);
@@ -71,7 +73,10 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
 	@Override
 	public void onClick(View v) {
 		int id = v.getId();
-		if (id == R.id.btn_handler) {
+		if (id == R.id.btn_other_test) {
+			Intent i = new Intent(this, OtherTestActivity.class);
+			startActivity(i);
+		} else if (id == R.id.btn_handler) {
 			BaseClt.startCollectors(mContext);
 		} else if (id == R.id.btn_memory_leak) {
 			Intent i = new Intent(this, MemoryLeakActivity.class);
